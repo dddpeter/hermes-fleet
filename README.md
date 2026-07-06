@@ -10,8 +10,6 @@
 </p>
 
 <p align="center">
-  <a href="https://gitee.com/dddpeter/hermes-fleet/releases/latest">Download Hermes Fleet Desktop</a>
-  ·
   <code>npm install -g hermes-web-ui && hermes-web-ui start</code>
 </p>
 
