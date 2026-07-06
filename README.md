@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  A desktop app, local runtime, and web console for <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a>.<br/>
+  A local runtime and web console for <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a>.<br/>
   Chat with agents, manage models and profiles, connect platform channels,<br/>
   automate jobs, inspect files, run coding agents, and keep everything local.
 </p>
@@ -31,7 +31,7 @@
 | Local control plane | Manages profiles, providers, models, credentials, memory, skills, plugins, logs, and runtime settings from one dashboard. |
 | Automation | Configures platform channels, cron jobs, Kanban tasks, group-chat rooms, and MCP servers around the same Hermes profiles. |
 | Workspace tools | Provides a file browser, web terminal, voice input/output, coding-agent runners, device discovery, and performance views. |
-| Distribution | Ships as a desktop app for Windows/macOS/Linux and an npm CLI package. |
+| Distribution | Ships as an npm CLI package and a local runtime. |
 
 ## Features
 
@@ -204,51 +204,9 @@ hermes-web-ui reset-default-login
 - Real-time keyboard input and PTY output streaming via WebSocket
 - Window resize support
 
-### Desktop App & Updates
-
-- Native Electron shell for Windows, macOS, and Linux
-- Bundles the Web UI runtime and starts the local Hermes Fleet server automatically
-- Uses Cloudflare download endpoints for desktop auto-update metadata and assets first
-- Falls back to GitHub Releases `latest` assets if the Cloudflare update feed is unavailable
-- Windows upgrades attempt to close an existing Hermes Fleet process before replacing files
-
 ---
 
 ## Quick Start
-
-### Desktop App (Recommended)
-
-Download the latest **Hermes Fleet** desktop installer from
-[GitHub Releases](https://gitee.com/dddpeter/hermes-fleet/releases/latest).
-
-Desktop builds are published for macOS, Windows, and Linux, with separate
-architecture assets where applicable. The desktop app bundles the Web UI
-runtime and stores Hermes Agent data in the native Hermes location:
-
-- Windows: `%LOCALAPPDATA%\hermes` (falls back to `%APPDATA%\hermes`)
-- macOS/Linux: `~/.hermes`
-
-The desktop wrapper stores its own Web UI state separately in
-`~/.hermes-web-ui` unless `HERMES_WEB_UI_HOME` is set.
-
-After the packaged desktop app starts, it installs managed command shims so the
-desktop app, bundled Hermes Agent CLI, and bundled Web UI CLI do not conflict:
-
-| Command | Description |
-| --- | --- |
-| `hermes-fleet` | Open the Hermes Fleet desktop app |
-| `hermes-fleet cli ...` | Run the bundled Hermes Agent CLI |
-| `hermes-fleet web ...` | Run the bundled `hermes-web-ui` command |
-| `hermes-fleet -h` | Show wrapper help |
-| `hermes-studio-mcp` | Run the managed Web UI MCP bridge |
-
-Use `hermes-fleet cli -h` for Hermes Agent CLI help and
-`hermes-fleet web -h` for Web UI CLI help.
-
-Desktop auto-updates read the latest feed from
-`https://download.ekkolearnai.com/latest` first. If that endpoint is
-unavailable, the updater falls back to
-`https://gitee.com/dddpeter/hermes-fleet/releases/latest/download`.
 
 ### npm
 
@@ -414,5 +372,5 @@ The BFF layer handles Socket.IO chat streaming, the Hermes agent bridge, profile
 [BSL-1.1](./LICENSE)
 
 The license covers Hermes Fleet, the former Hermes Web UI name, the
-`hermes-web-ui` npm package and CLI, desktop applications, firmware, release
+`hermes-web-ui` npm package and CLI, firmware, release
 artifacts, documentation, and associated files in this repository.

@@ -31,7 +31,7 @@ export default {
     },
     badge: 'Local-first AI Agent Workspace',
     title: 'Hermes Fleet',
-    subtitle: 'A desktop app and local control plane for Hermes Agent. Chat, manage profiles, run coding agents, inspect files, automate jobs, and keep your runtime under your control.',
+    subtitle: 'A local runtime and web console for Hermes Agent. Chat, manage profiles, run coding agents, inspect files, automate jobs, and keep your runtime under your control.',
     cta: 'Get Started',
     docsCta: 'Read Docs',
     viewGithub: 'View on GitHub',
@@ -83,8 +83,8 @@ export default {
       desc: 'Full PTY terminal in the browser with multi-session support via WebSocket and xterm.js.',
     },
     quickInstall: {
-      title: 'Desktop Runtime',
-      desc: 'Windows, macOS, and Linux desktop builds bundle the Web UI runtime and manage Hermes Fleet state separately from Hermes Agent data.',
+      title: 'Local Runtime',
+      desc: 'Install via npm and run the Web UI server locally. Hermes Fleet state stays separate from Hermes Agent data under ~/.hermes-web-ui.',
     },
     i18n: {
       title: 'Coding Agents & MCP',
@@ -92,7 +92,7 @@ export default {
     },
     theme: {
       title: 'Updates & Releases',
-      desc: 'Desktop updates check Cloudflare first with GitHub fallback, while full desktop releases are manually promoted to GitHub Latest.',
+      desc: 'Self-hosted releases with configurable update channels. The Web UI server checks for new versions and can self-update the npm install.',
     },
   },
   platforms: {
@@ -124,7 +124,7 @@ export default {
   },
   install: {
     title: 'Quick Start',
-    desc: 'Download the desktop app or run Hermes Fleet yourself.',
+    desc: 'Run Hermes Fleet yourself via npm or from source.',
     desktop: {
       title: 'Desktop',
       download: 'Download',

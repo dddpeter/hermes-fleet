@@ -31,7 +31,7 @@ export default {
     },
     badge: '本地优先的 AI Agent 工作区',
     title: 'Hermes Fleet',
-    subtitle: '面向 Hermes Agent 的桌面应用和本地控制台。聊天、管理 Profile、运行 Coding Agent、查看文件、自动化任务，并掌控自己的运行环境。',
+    subtitle: '面向 Hermes Agent 的本地运行时和 Web 控制台。聊天、管理 Profile、运行 Coding Agent、查看文件、自动化任务，并掌控自己的运行环境。',
     cta: '开始使用',
     docsCta: '查看文档',
     viewGithub: '查看 GitHub',
@@ -83,8 +83,8 @@ export default {
       desc: '浏览器内完整 PTY 终端，基于 WebSocket 和 xterm.js 的多会话支持。',
     },
     quickInstall: {
-      title: '桌面运行时',
-      desc: 'Windows、macOS 和 Linux 桌面版内置 Web UI 运行时，并把 Hermes Fleet 状态与 Hermes Agent 数据分开管理。',
+      title: '本地运行时',
+      desc: '通过 npm 安装并在本地运行 Web UI 服务。Hermes Fleet 状态与 Hermes Agent 数据分开存放于 ~/.hermes-web-ui。',
     },
     i18n: {
       title: 'Coding Agent 与 MCP',
@@ -92,7 +92,7 @@ export default {
     },
     theme: {
       title: '更新与发布',
-      desc: '桌面更新优先检查 Cloudflare，并保留 GitHub 兜底；完整桌面 release 成功后才提升为 GitHub Latest。',
+      desc: '自托管发布，支持可配置的更新通道。Web UI 服务会检查新版本，并可为 npm 安装进行自更新。',
     },
   },
   platforms: {
@@ -124,7 +124,7 @@ export default {
   },
   install: {
     title: '快速开始',
-    desc: '下载桌面应用，或自行运行 Hermes Fleet。',
+    desc: '通过 npm 或源码自行运行 Hermes Fleet。',
     desktop: {
       title: '桌面版',
       download: '下载',

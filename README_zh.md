@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  面向 <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> 的桌面应用、本地运行时和 Web 控制台。<br/>
+  面向 <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> 的本地运行时和 Web 控制台。<br/>
   聊天、模型与 Profile 管理、平台渠道接入、任务自动化、<br/>
   文件查看、Coding Agent 和本地运行环境都在一个界面中完成。
 </p>
@@ -31,7 +31,7 @@
 | 本地控制台 | 在一个仪表盘中管理 Profile、Provider、模型、凭证、记忆、技能、插件、日志和运行时设置。 |
 | 自动化 | 围绕同一套 Hermes Profile 配置平台渠道、Cron 任务、Kanban 任务、群聊房间和 MCP Server。 |
 | 工作区工具 | 提供文件浏览器、Web 终端、语音输入输出、Coding Agent、设备发现和性能视图。 |
-| 分发形态 | 支持 Windows/macOS/Linux 桌面应用、npm CLI 包。 |
+| 分发形态 | npm CLI 包与本地运行时。 |
 
 ## 功能特性
 
@@ -204,49 +204,9 @@ hermes-web-ui reset-default-login
 - 通过 WebSocket 实时传输键盘输入和 PTY 输出
 - 支持窗口大小调整
 
-### 桌面应用与自动更新
-
-- Windows、macOS 和 Linux 原生 Electron 桌面壳
-- 内置 Web UI 运行时，并自动启动本地 Hermes Fleet 服务
-- 桌面自动更新优先使用 Cloudflare 下载端点获取更新元数据和安装包
-- 如果 Cloudflare 更新源不可用，会回退到 GitHub Releases `latest` 资源
-- Windows 升级时会先尝试关闭已有 Hermes Fleet 进程，再替换文件
-
 ---
 
 ## 快速开始
-
-### 桌面应用（推荐）
-
-从 [GitHub Releases](https://gitee.com/dddpeter/hermes-fleet/releases/latest)
-下载最新的 **Hermes Fleet** 桌面安装包。
-
-桌面版会发布 macOS、Windows 和 Linux 构建；适用时会区分不同 CPU 架构。
-桌面应用内置 Web UI 运行时，Hermes Agent 数据会保存到原生 Hermes 目录：
-
-- Windows：`%LOCALAPPDATA%\hermes`（找不到时回退到 `%APPDATA%\hermes`）
-- macOS/Linux：`~/.hermes`
-
-桌面壳自身的 Web UI 状态会单独保存到 `~/.hermes-web-ui`，除非设置了
-`HERMES_WEB_UI_HOME`。
-
-打包后的桌面应用启动后，会安装受管命令 shim，避免桌面应用、内置 Hermes Agent CLI
-和内置 Web UI CLI 的命令互相冲突：
-
-| 命令 | 说明 |
-|---|---|
-| `hermes-fleet` | 打开 Hermes Fleet 桌面应用 |
-| `hermes-fleet cli ...` | 运行内置 Hermes Agent CLI |
-| `hermes-fleet web ...` | 运行内置 `hermes-web-ui` 命令 |
-| `hermes-fleet -h` | 显示 wrapper 帮助 |
-| `hermes-studio-mcp` | 运行受管 Web UI MCP bridge |
-
-使用 `hermes-fleet cli -h` 查看 Hermes Agent CLI 帮助，使用
-`hermes-fleet web -h` 查看 Web UI CLI 帮助。
-
-桌面自动更新会优先读取 `https://download.ekkolearnai.com/latest`。
-如果该端点不可用，更新器会回退到
-`https://gitee.com/dddpeter/hermes-fleet/releases/latest/download`。
 
 ### npm 安装
 
@@ -409,4 +369,4 @@ BFF 层负责：Socket.IO 聊天流式推送、Hermes agent bridge、按 Profile
 [BSL-1.1](./LICENSE)
 
 该许可证覆盖 Hermes Fleet、原 Hermes Web UI 名称、`hermes-web-ui` npm 包和
-CLI、桌面应用、固件、发布产物、文档以及本仓库内的关联文件。
+CLI、固件、发布产物、文档以及本仓库内的关联文件。
