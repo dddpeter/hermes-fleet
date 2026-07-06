@@ -248,7 +248,6 @@ const desktopManualBuildWorkflow = await readText('.github/workflows/desktop-man
 const desktopMacUpdateManifestWorkflow = await readText('.github/workflows/desktop-mac-update-manifest.yml')
 const desktopRuntimeWorkflow = await readText('.github/workflows/desktop-runtime.yml')
 const webuiReleaseWorkflow = await readText('.github/workflows/webui-release.yml')
-const dockerPublishWorkflow = await readText('.github/workflows/docker-publish.yml')
 const electronBuilderConfig = await readText('packages/desktop/electron-builder.yml')
 const desktopPackageJson = await readText('packages/desktop/package.json')
 const desktopInstallHermes = await readText('packages/desktop/scripts/install-hermes.mjs')
@@ -272,16 +271,11 @@ if (!desktopReleaseWorkflow.includes('gh release edit "$TAG" --repo "$GITHUB_REP
   fail('desktop-release.yml must mark successful full desktop releases as GitHub latest')
 }
 
-for (const [file, text] of [
-  ['webui-release.yml', webuiReleaseWorkflow],
-  ['docker-publish.yml', dockerPublishWorkflow],
-]) {
-  if (!text.includes('release:') || !text.includes('types: [published]')) {
-    fail(`${file} must keep running on published GitHub Releases`)
-  }
-  if (!text.includes('gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --latest=false')) {
-    fail(`${file} must keep published GitHub Releases out of latest`)
-  }
+if (!webuiReleaseWorkflow.includes('release:') || !webuiReleaseWorkflow.includes('types: [published]')) {
+  fail('webui-release.yml must keep running on published GitHub Releases')
+}
+if (!webuiReleaseWorkflow.includes('gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --latest=false')) {
+  fail('webui-release.yml must keep published GitHub Releases out of latest')
 }
 
 if (!webuiReleaseWorkflow.includes('make_latest: false')) {

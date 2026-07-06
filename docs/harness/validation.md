@@ -40,13 +40,12 @@ npm run build
 - NPM lockfile workflow: verifies `package-lock.json` is synchronized.
 - Desktop release and manual desktop build workflows build and upload
   platform-specific desktop artifacts.
-- Docker workflow: builds and publishes release images.
 
 ## Release Workflow Guardrail
 
-Published GitHub Releases should still trigger Web UI artifact packaging and
-Docker image publishing, but those workflows must keep the GitHub Release out
-of latest.
+Published GitHub Releases should still trigger Web UI artifact packaging, and
+the Web UI release workflow must keep the published GitHub Release out of
+latest.
 
 Full desktop packaging is manually dispatched through
 `.github/workflows/desktop-release.yml`; published GitHub Releases must not

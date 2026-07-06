@@ -1,7 +1,18 @@
 import { EventEmitter } from 'events'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { mkdtempSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const originalEnv = { ...process.env }
+
+// Isolate managed-gateway log output from the real Web UI home so these tests
+// never write under ~/.hermes-web-ui/logs.
+let isolatedLogDir: string
+beforeEach(() => {
+  isolatedLogDir = mkdtempSync(join(tmpdir(), 'hermes-gateway-runner-logs-'))
+  process.env.HERMES_WEB_UI_GATEWAY_LOG_DIR = isolatedLogDir
+})
 
 class FakeChild extends EventEmitter {
   pid: number
@@ -39,6 +50,9 @@ afterEach(() => {
   vi.resetModules()
   process.env = { ...originalEnv }
   fakeChildren = []
+  if (isolatedLogDir) {
+    try { rmSync(isolatedLogDir, { recursive: true, force: true }) } catch { /* ignored */ }
+  }
 })
 
 describe('gateway-runner supervision', () => {

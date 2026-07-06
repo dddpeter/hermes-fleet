@@ -49,6 +49,9 @@ describe('profile delete managed gateway lifecycle', () => {
     const home = await mkdtemp(join(tmpdir(), 'wui-1633-'))
     process.env.HERMES_HOME = home
     process.env.HERMES_BIN = '/usr/bin/hermes'
+    // Keep managed-gateway log output inside the temp home so the test never
+    // writes under the real ~/.hermes-web-ui/logs.
+    process.env.HERMES_WEB_UI_GATEWAY_LOG_DIR = join(home, 'logs')
     const profileDir = join(home, 'profiles', 'work')
     await mkdir(profileDir, { recursive: true })
     await writeFile(join(profileDir, 'config.yaml'), 'model:\n  default: test\n', 'utf-8')

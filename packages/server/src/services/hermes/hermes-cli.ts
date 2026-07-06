@@ -13,7 +13,6 @@ import { execHermesWithBin, spawnHermesWithBin } from './hermes-process'
 const execFileAsync = promisify(execFile)
 
 const execOpts = { windowsHide: true }
-const isDocker = existsSync('/.dockerenv')
 const isTermux = !!process.env.TERMUX_VERSION ||
   (process.env.PREFIX || '').includes('/com.termux/') ||
   existsSync('/data/data/com.termux/files/usr')
@@ -417,11 +416,6 @@ export async function getVersion(): Promise<string> {
  * Start Hermes gateway (uses launchd/systemd)
  */
 export async function startGateway(): Promise<string> {
-  if (isDocker) {
-    const pid = await startGatewayBackground()
-    return pid ? `Gateway started (PID: ${pid})` : 'Gateway start triggered'
-  }
-
   const { stdout, stderr } = await execHermesWithBin(HERMES_BIN, ['gateway', 'start'], {
     timeout: 30000,
     ...activeGatewayExecOpts(),
@@ -453,7 +447,7 @@ export async function startGatewayBackground(): Promise<number | null> {
  */
 export async function restartGateway(): Promise<string> {
   const profileDir = getActiveProfileDir()
-  if (isDocker || isTermux || process.platform === 'win32') {
+  if (isTermux || process.platform === 'win32') {
     await stopGatewayForActiveProfile()
     const lockReleased = await waitForGatewayLockReleasedAfterStop(profileDir)
     if (!lockReleased) throw new Error('Gateway stopped but runtime lock is still held by another process')

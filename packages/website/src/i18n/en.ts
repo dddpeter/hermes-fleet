@@ -170,10 +170,6 @@ export default {
       cmd1: 'npm install -g hermes-web-ui',
       cmd2: 'hermes-web-ui start',
     },
-    docker: {
-      title: 'Docker',
-      cmd: 'docker compose up -d',
-    },
     source: {
       title: 'From Source',
       cmd1: 'git clone https://github.com/EKKOLearnAI/hermes-studio.git',

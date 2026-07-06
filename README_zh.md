@@ -41,7 +41,7 @@
 | 本地控制台 | 在一个仪表盘中管理 Profile、Provider、模型、凭证、记忆、技能、插件、日志和运行时设置。 |
 | 自动化 | 围绕同一套 Hermes Profile 配置平台渠道、Cron 任务、Kanban 任务、群聊房间和 MCP Server。 |
 | 工作区工具 | 提供文件浏览器、Web 终端、语音输入输出、Coding Agent、设备发现和性能视图。 |
-| 分发形态 | 支持 Windows/macOS/Linux 桌面应用、npm CLI 包和 Docker 镜像。 |
+| 分发形态 | 支持 Windows/macOS/Linux 桌面应用、npm CLI 包。 |
 
 ## 功能特性
 
@@ -267,28 +267,18 @@ hermes-web-ui start
 
 打开 **http://localhost:8648**
 
-### Docker Compose
-
-单容器部署，内置 Hermes Agent 运行时：
+### 从源码运行（开发模式）
 
 ```bash
-# 使用预构建镜像（推荐）
-WEBUI_IMAGE=ekkoye8888/hermes-web-ui docker compose up -d
-
-# 或从源码构建
-docker compose up -d --build
-
-docker compose logs -f hermes-webui
+npm ci --ignore-scripts
+npm run dev          # Vite 客户端 + Koa 服务端，热重载
+# 或构建生产产物：
+npm run build && npm start
 ```
 
-打开 **http://localhost:6060**
-
-- Hermes 持久化数据目录：`./hermes_data`
-- Web UI 认证 Token 存储在 `./hermes_data/hermes-web-ui/.token`
-- 首次启动并开启认证时，Token 会打印到容器日志中
-- 运行参数全部由 `docker-compose.yml` 环境变量驱动
-
-更详细的说明与排错见：[`docs/docker.md`](./docs/docker.md)
+每个 Hermes profile 以独立的原生 gateway 进程运行（一个 profile 一个
+gateway），由 Web UI 托管。各 profile 的 gateway 日志写入
+`<HERMES_WEB_UI_HOME>/logs/gateway-<profile>.log`。
 
 ### Hermes Agent 运行时发现
 

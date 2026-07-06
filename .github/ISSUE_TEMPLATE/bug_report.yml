@@ -78,7 +78,6 @@ body:
       label: Environment
       description: Where are you running Hermes Web UI?
       options:
-        - Docker
         - macOS
         - Linux
         - Windows

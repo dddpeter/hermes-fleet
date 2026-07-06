@@ -33,7 +33,7 @@ Use the smallest relevant check while iterating. Before a broad PR, run
 - `packages/desktop` - Electron wrapper, bundled Python/Hermes runtime, release artifacts.
 - `tests/client`, `tests/server`, `tests/shared` - Vitest coverage.
 - `tests/e2e` - Playwright browser coverage with mocked backend services.
-- `.github/workflows` - CI, release, Docker, and desktop packaging automation.
+- `.github/workflows` - CI, release, and desktop packaging automation.
 
 ## Hard Rules
 

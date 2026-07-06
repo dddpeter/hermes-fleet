@@ -33,7 +33,7 @@
 | Local control plane | Manages profiles, providers, models, credentials, memory, skills, plugins, logs, and runtime settings from one dashboard. |
 | Automation | Configures platform channels, cron jobs, Kanban tasks, group-chat rooms, and MCP servers around the same Hermes profiles. |
 | Workspace tools | Provides a file browser, web terminal, voice input/output, coding-agent runners, device discovery, and performance views. |
-| Distribution | Ships as a desktop app for Windows/macOS/Linux, an npm CLI package, and a Docker image. |
+| Distribution | Ships as a desktop app for Windows/macOS/Linux and an npm CLI package. |
 
 ## Features
 
@@ -261,28 +261,18 @@ hermes-web-ui start
 
 Open **http://localhost:8648**
 
-### Docker Compose
-
-Single-container deployment with integrated Hermes Agent:
+### From source (development)
 
 ```bash
-# Use pre-built image (Recommended)
-WEBUI_IMAGE=ekkoye8888/hermes-web-ui docker compose up -d
-
-# Or build from source
-docker compose up -d --build
-
-docker compose logs -f hermes-webui
+npm ci --ignore-scripts
+npm run dev          # Vite client + Koa server with live reload
+# or a production build:
+npm run build && npm start
 ```
 
-Open **http://localhost:6060**
-
-- Persistent Hermes data is stored in `./hermes_data`
-- Web UI auth token is stored in `./hermes_data/hermes-web-ui/.token`
-- On first run with auth enabled, the token is printed to container logs
-- All runtime settings are environment-variable driven in `docker-compose.yml`
-
-For detailed notes and troubleshooting, see [`docs/docker.md`](./docs/docker.md).
+Each Hermes profile runs its own native gateway process (one gateway per
+profile), supervised by the Web UI. Per-profile gateway logs are written to
+`<HERMES_WEB_UI_HOME>/logs/gateway-<profile>.log`.
 
 ### Hermes Agent Runtime Discovery
 

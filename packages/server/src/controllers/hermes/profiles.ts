@@ -14,7 +14,14 @@ import {
 import { logger } from '../../services/logger'
 import { smartCloneCleanup, copyModelProviderAuthForClone } from '../../services/hermes/profile-credentials'
 import { detectHermesRootHome } from '../../services/hermes/hermes-path'
-import { getActiveProfileName } from '../../services/hermes/hermes-profile'
+import { getActiveProfileName, getProfileDir, listProfileNamesFromDisk } from '../../services/hermes/hermes-profile'
+import {
+  assignedApiServerPortForProfile,
+  assignedGatewayPortForProfile,
+  assignedWebhookPortForProfile,
+  gatewayLogPathForProfile,
+} from '../../services/hermes/gateway-runner'
+import { updateConfigYamlForProfile, saveEnvValueForProfile } from '../../services/config-helpers'
 import { HermesSkillInjector } from '../../services/hermes/skill-injector'
 import type { HermesProfile } from '../../services/hermes/hermes-cli'
 import { listUserProfiles } from '../../db/hermes/users-store'
@@ -284,33 +291,54 @@ function gatewayStatusLooksRunning(status?: string): boolean {
 async function buildRuntimeStatus(profile: HermesProfile | string, bridgeState?: Awaited<ReturnType<typeof readBridgeWorkers>>) {
   const name = typeof profile === 'string' ? profile : profile.name
   const bridge = bridgeState || await readBridgeWorkers()
-  let gateway: { running: boolean; profile: string; error?: string }
+  // Per-profile gateway diagnostics: the assigned platform ports and log file.
+  // The Web UI talks to the gateway via the agent bridge, not these ports, but
+  // surfacing them lets operators reason about native multi-profile gateways.
+  // `apiServerPort`/`webhookPort` are the ports actually written into the
+  // profile's config.yaml; `assignedPort` is the legacy generic field kept for
+  // client compatibility.
+  const profileDir = getProfileDir(name)
+  const gatewayAssignedPort = assignedGatewayPortForProfile(profileDir)
+  const apiServerPort = assignedApiServerPortForProfile(profileDir)
+  const webhookPort = assignedWebhookPortForProfile(profileDir)
+  const gatewayLogPath = gatewayLogPathForProfile(profileDir)
+  const portFields = { assignedPort: gatewayAssignedPort, apiServerPort, webhookPort, logPath: gatewayLogPath }
+  let gateway: { running: boolean; profile: string; error?: string; assignedPort: number; apiServerPort: number; webhookPort: number; logPath: string }
   if (typeof profile !== 'string' && profile.gatewayStatus !== undefined) {
     const profileListRunning = gatewayStatusLooksRunning(profile.gatewayStatus)
     if (profileListRunning) {
       gateway = {
         running: true,
         profile: name,
+        ...portFields,
       }
     } else {
       try {
-        gateway = await getGatewayRuntimeStatusForProfile(name)
+        gateway = {
+          ...await getGatewayRuntimeStatusForProfile(name),
+          ...portFields,
+        }
       } catch (err: any) {
         gateway = {
           running: false,
           profile: name,
           error: err?.message || 'Gateway status check failed',
+          ...portFields,
         }
       }
     }
   } else {
     try {
-      gateway = await getGatewayRuntimeStatusForProfile(name)
+      gateway = {
+        ...await getGatewayRuntimeStatusForProfile(name),
+        ...portFields,
+      }
     } catch (err: any) {
       gateway = {
         running: false,
         profile: name,
         error: err?.message || 'Gateway status check failed',
+        ...portFields,
       }
     }
   }
@@ -397,6 +425,64 @@ export async function list(ctx: any) {
   }
 }
 
+/**
+ * Write distinct api_server / webhook ports into a non-default profile so its
+ * gateway can coexist with other profiles' gateways.
+ *
+ * Ports are written to two places because Hermes resolves them with layered
+ * priority:
+ *   - `<profile>/.env` (`API_SERVER_PORT` / `WEBHOOK_PORT`) — the highest-
+ *     priority source. A cloned profile inherits the source's `.env` verbatim
+ *     (e.g. `API_SERVER_PORT=8642`), which would override everything else and
+ *     force a collision. So `.env` is always rewritten to the assigned ports.
+ *   - `<profile>/config.yaml` (`platforms.<name>.extra.port`) — the structured
+ *     source, written idempotently (only when unset) so a user-chosen port is
+ *     preserved.
+ *
+ * The default profile is skipped (keeps upstream defaults 8642/8644).
+ * Failures are soft — logged but never block profile creation/import.
+ */
+async function ensureProfilePlatformPorts(name: string): Promise<void> {
+  if (!name || name === 'default') return
+  try {
+    const profileDir = getProfileDir(name)
+    const apiServerPort = assignedApiServerPortForProfile(profileDir)
+    const webhookPort = assignedWebhookPortForProfile(profileDir)
+    // `.env` has the highest priority and is inherited verbatim on clone, so
+    // always rewrite these two keys to the assigned ports (not idempotent — a
+    // stale 8642 here is exactly the collision we are fixing).
+    await saveEnvValueForProfile(name, 'API_SERVER_PORT', String(apiServerPort))
+    await saveEnvValueForProfile(name, 'WEBHOOK_PORT', String(webhookPort))
+    // config.yaml is the structured source; write idempotently.
+    await updateConfigYamlForProfile(name, (config) => {
+      const data = config && typeof config === 'object' ? config : {}
+      // Defensively create the nesting; default/clone configs already have it.
+      const platforms = (data.platforms && typeof data.platforms === 'object') ? data.platforms : {}
+      const apiServer = (platforms.api_server && typeof platforms.api_server === 'object') ? platforms.api_server : {}
+      const webhook = (platforms.webhook && typeof platforms.webhook === 'object') ? platforms.webhook : {}
+      const apiExtra = (apiServer.extra && typeof apiServer.extra === 'object') ? apiServer.extra : {}
+      const webhookExtra = (webhook.extra && typeof webhook.extra === 'object') ? webhook.extra : {}
+      // Idempotent: only assign when unset, never clobber a user-chosen port.
+      let changed = false
+      if (apiExtra.port === undefined) { apiExtra.port = apiServerPort; changed = true }
+      if (webhookExtra.port === undefined) { webhookExtra.port = webhookPort; changed = true }
+      if (!changed) return { data: config, result: undefined as void, write: false }
+      apiServer.extra = apiExtra
+      webhook.extra = webhookExtra
+      platforms.api_server = apiServer
+      platforms.webhook = webhook
+      data.platforms = platforms
+      return { data, result: undefined as void }
+    })
+    logger.info(
+      '[profiles] assigned platform ports for "%s": api_server=%s webhook=%s',
+      name, apiServerPort, webhookPort,
+    )
+  } catch (err: any) {
+    logger.warn(err, '[profiles] failed to assign platform ports for "%s"; gateway may collide on defaults', name)
+  }
+}
+
 export async function create(ctx: any) {
   const { name, clone } = ctx.request.body as { name?: string; clone?: boolean }
   if (!name) {
@@ -447,6 +533,11 @@ export async function create(ctx: any) {
         logger.error(err, 'Smart clone cleanup failed for "%s"', name)
       }
     }
+
+    // Assign distinct api_server/webhook ports for non-default profiles so
+    // multiple native gateways can bind their own platform ports. Runs after
+    // clone cleanup (no overlap) and before skills injection. Idempotent + soft.
+    await ensureProfilePlatformPorts(name)
 
     await injectBundledSkillsForProfile(name)
 
@@ -593,7 +684,15 @@ export async function restartGatewayForProfile(ctx: any) {
     return
   }
   try {
-    const gateway = await restartGatewayRuntimeForProfile(name)
+    const restartedGateway = await restartGatewayRuntimeForProfile(name)
+    const profileDirForPorts = getProfileDir(name)
+    const gateway = {
+      ...restartedGateway,
+      assignedPort: assignedGatewayPortForProfile(profileDirForPorts),
+      apiServerPort: assignedApiServerPortForProfile(profileDirForPorts),
+      webhookPort: assignedWebhookPortForProfile(profileDirForPorts),
+      logPath: gatewayLogPathForProfile(profileDirForPorts),
+    }
     try {
       const result = await bridgeCleanupClient().destroyProfile(name)
       logger.info('[profiles] destroyed bridge sessions after gateway restart profile=%s destroyed=%s', name, result.destroyed)
@@ -839,6 +938,16 @@ export async function importProfile(ctx: any) {
   try {
     const result = await hermesCli.importProfile(archivePath)
     try { unlinkSync(archivePath) } catch { }
+    // An imported profile may carry default platform ports (8642/8644) and
+    // collide with other gateways. Top up any non-default profile that is
+    // still missing distinct api_server/webhook ports. Idempotent + soft.
+    try {
+      for (const profileName of listProfileNamesFromDisk()) {
+        await ensureProfilePlatformPorts(profileName)
+      }
+    } catch (err: any) {
+      logger.warn(err, '[profiles] post-import platform port assignment partially failed')
+    }
     ctx.body = { success: true, message: result.trim() }
   } catch (err: any) {
     try { unlinkSync(archivePath) } catch { }

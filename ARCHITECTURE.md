@@ -11,7 +11,7 @@ backend, and an Electron desktop distribution around Hermes Agent.
 | Server | `packages/server/src` | HTTP API, auth, Socket.IO, SQLite stores, file access, Hermes runtime integration. |
 | Desktop | `packages/desktop` | Electron shell, local Web UI server bootstrap, updater, bundled Python/Hermes runtime. |
 | Tests | `tests` | Vitest unit/integration tests and Playwright browser tests. |
-| CI | `.github/workflows` | Build, e2e, lockfile, Docker, and desktop release automation. |
+| CI | `.github/workflows` | Build, e2e, lockfile, and desktop release automation. |
 
 ## Request Flow
 
@@ -71,7 +71,7 @@ Frontend rules:
 Desktop packaging is intentionally split:
 
 - Pull requests run the web UI build and tests in `.github/workflows/build.yml`.
-- Published GitHub Releases run Web UI artifact packaging and Docker image publishing without
+- Published GitHub Releases run Web UI artifact packaging without
   marking the release as GitHub latest.
 - Manual dispatches run full desktop artifact packaging in `.github/workflows/desktop-release.yml`.
 - `.github/workflows/desktop-manual-build.yml` builds one desktop target for targeted repairs or re-runs.

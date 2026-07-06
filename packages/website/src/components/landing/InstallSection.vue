@@ -11,7 +11,7 @@ interface DesktopDownload {
 
 const { t, tm } = useI18n()
 useScrollReveal()
-const activeTab = ref<'desktop' | 'npm' | 'docker' | 'source'>('desktop')
+const activeTab = ref<'desktop' | 'npm' | 'source'>('desktop')
 
 const releaseVersion = __WEBSITE_DOWNLOAD_VERSION__.replace(/^v/, '')
 const releaseTag = `v${releaseVersion}`
@@ -54,7 +54,7 @@ function copyText(text: string) {
 
     <div class="install-tabs reveal">
       <button
-        v-for="tab in (['desktop', 'npm', 'docker', 'source'] as const)"
+        v-for="tab in (['desktop', 'npm', 'source'] as const)"
         :key="tab"
         class="tab-btn"
         :class="{ active: activeTab === tab }"
@@ -111,11 +111,6 @@ function copyText(text: string) {
         </div>
         <div class="code-block" @click="copyText(t('install.npm.cmd2'))">
           <code>{{ t('install.npm.cmd2') }}</code>
-        </div>
-      </template>
-      <template v-else-if="activeTab === 'docker'">
-        <div class="code-block" @click="copyText(t('install.docker.cmd'))">
-          <code>{{ t('install.docker.cmd') }}</code>
         </div>
       </template>
       <template v-else>

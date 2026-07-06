@@ -160,6 +160,95 @@ describe('Profile Routes', () => {
       expect(clonedAuth.credential_pool.anthropic).toBeUndefined()
     })
 
+    it('writes distinct api_server/webhook ports into a newly created non-default profile config.yaml', async () => {
+      const hermesHome = await mkdtemp(join(tmpdir(), 'hermes-profile-ports-'))
+      tempHomes.push(hermesHome)
+      process.env.HERMES_HOME = hermesHome
+      await writeFile(join(hermesHome, 'active_profile'), 'default\n', 'utf-8')
+      vi.mocked(hermesCli.createProfile).mockImplementation(async (name: string) => {
+        const profileDir = join(hermesHome, 'profiles', name)
+        await mkdir(profileDir, { recursive: true })
+        // Seed a realistic config with existing platforms nodes but no ports.
+        await writeFile(join(profileDir, 'config.yaml'), [
+          'model:',
+          '  default: glm-5-turbo',
+          'platforms:',
+          '  api_server:',
+          '    enabled: true',
+          '  webhook:',
+          '    enabled: true',
+          '',
+        ].join('\n'), 'utf-8')
+        // Seed an .env that clones the source's stale default port — the exact
+        // collision source this feature fixes. It must be rewritten.
+        await writeFile(join(profileDir, '.env'), 'API_SERVER_PORT=8642\n', 'utf-8')
+        return 'Profile created'
+      })
+      const { create } = await import('../../packages/server/src/controllers/hermes/profiles')
+      const ctx: any = { request: { body: { name: 'coder', clone: false } }, status: 200, body: undefined }
+
+      await create(ctx)
+
+      expect(ctx.status).toBe(200)
+      const { assignedApiServerPortForProfile, assignedWebhookPortForProfile } = await import(
+        '../../packages/server/src/services/hermes/gateway-runner'
+      )
+      const profileDir = join(hermesHome, 'profiles', 'coder')
+      const expectedApi = assignedApiServerPortForProfile(profileDir)
+      const expectedWebhook = assignedWebhookPortForProfile(profileDir)
+      // config.yaml gets the structured extra.port (idempotent)
+      const written = readFileSync(join(profileDir, 'config.yaml'), 'utf-8')
+      expect(written).toContain(`port: ${expectedApi}`)
+      expect(written).toContain(`port: ${expectedWebhook}`)
+      // .env gets the high-priority override; the cloned 8642 must be gone
+      const env = readFileSync(join(profileDir, '.env'), 'utf-8')
+      expect(env).toContain(`API_SERVER_PORT=${expectedApi}`)
+      expect(env).not.toContain('API_SERVER_PORT=8642')
+      expect(env).toContain(`WEBHOOK_PORT=${expectedWebhook}`)
+      // Ports must differ from the defaults (otherwise they would collide)
+      expect(expectedApi).not.toBe(8642)
+      expect(expectedWebhook).not.toBe(8644)
+    })
+
+    it('does not overwrite a user-configured port on re-creation (idempotent)', async () => {
+      const hermesHome = await mkdtemp(join(tmpdir(), 'hermes-profile-idempotent-'))
+      tempHomes.push(hermesHome)
+      process.env.HERMES_HOME = hermesHome
+      await writeFile(join(hermesHome, 'active_profile'), 'default\n', 'utf-8')
+      const userChosenPort = 9999
+      vi.mocked(hermesCli.createProfile).mockImplementation(async (name: string) => {
+        const profileDir = join(hermesHome, 'profiles', name)
+        await mkdir(profileDir, { recursive: true })
+        // Pre-existing user-chosen api_server port must be preserved.
+        await writeFile(join(profileDir, 'config.yaml'), [
+          'platforms:',
+          '  api_server:',
+          '    enabled: true',
+          '    extra:',
+          `      port: ${userChosenPort}`,
+          '  webhook:',
+          '    enabled: true',
+          '',
+        ].join('\n'), 'utf-8')
+        return 'Profile created'
+      })
+      const { create } = await import('../../packages/server/src/controllers/hermes/profiles')
+      const ctx: any = { request: { body: { name: 'pinned', clone: false } }, status: 200, body: undefined }
+
+      await create(ctx)
+
+      expect(ctx.status).toBe(200)
+      const written = readFileSync(join(hermesHome, 'profiles', 'pinned', 'config.yaml'), 'utf-8')
+      // User-chosen api_server port preserved, not clobbered
+      expect(written).toContain(`port: ${userChosenPort}`)
+      // webhook port still assigned (was missing)
+      const { assignedWebhookPortForProfile } = await import(
+        '../../packages/server/src/services/hermes/gateway-runner'
+      )
+      const expectedWebhook = assignedWebhookPortForProfile(join(hermesHome, 'profiles', 'pinned'))
+      expect(written).toContain(`port: ${expectedWebhook}`)
+    })
+
     it('deleteProfile calls CLI with name', async () => {
       vi.mocked(hermesCli.deleteProfile).mockResolvedValue(true)
 
