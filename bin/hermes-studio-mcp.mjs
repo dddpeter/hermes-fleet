@@ -41,7 +41,7 @@ const VERSION = readPackageVersion()
 function printHelp() {
   process.stdout.write(`${DISPLAY_COMMAND} v${VERSION}
 
-Hermes Studio MCP stdio server.
+Hermes Fleet MCP stdio server.
 
 Usage:
   ${DISPLAY_COMMAND} [api|devices|use]
@@ -527,7 +527,7 @@ function compactOpenApiDocument(openapi, args = {}) {
   }
 
   return {
-    title: openapi?.info?.title || 'Hermes Studio API',
+    title: openapi?.info?.title || 'Hermes Fleet API',
     version: openapi?.info?.version || '',
     usage: hasFilters
       ? 'Use the selected operation details to call hermes_studio_api_request with method, path, query, and body. Auth and profile are handled by the MCP server.'
@@ -772,7 +772,7 @@ const tools = [
   {
     name: 'hermes_studio_api_openapi_get',
     toolset: 'api',
-    description: 'Return Hermes Studio API documentation as compact JSON. When the user asks to read/check the operation manual, API docs, endpoint docs, 接口文档, 接口手册, or 操作手册, call this tool without filters first to get the outline/module index. Without filters, returns only module purpose, keywords, and operation counts because the full API catalog is large. For endpoint details, call again with tag, path, or method filters, then use hermes_studio_api_request.',
+    description: 'Return Hermes Fleet API documentation as compact JSON. When the user asks to read/check the operation manual, API docs, endpoint docs, 接口文档, 接口手册, or 操作手册, call this tool without filters first to get the outline/module index. Without filters, returns only module purpose, keywords, and operation counts because the full API catalog is large. For endpoint details, call again with tag, path, or method filters, then use hermes_studio_api_request.',
     inputSchema: inputSchema({
         path: {
           type: 'string',
@@ -796,7 +796,7 @@ const tools = [
   {
     name: 'hermes_studio_api_request',
     toolset: 'api',
-    description: 'Execute a Hermes Studio operation by calling an endpoint path. Use hermes_studio_api_openapi_get first as the operation manual to inspect method, parameters, requestBody, and responses. Do not use /api/chat-run/* or /api/hermes/sessions/* as an internal delegation mechanism.',
+    description: 'Execute a Hermes Fleet operation by calling an endpoint path. Use hermes_studio_api_openapi_get first as the operation manual to inspect method, parameters, requestBody, and responses. Do not use /api/chat-run/* or /api/hermes/sessions/* as an internal delegation mechanism.',
     inputSchema: inputSchema({
         method: {
           type: 'string',
@@ -805,7 +805,7 @@ const tools = [
         },
         path: {
           type: 'string',
-          description: 'Relative Hermes Studio endpoint path from the operation manual, for example /api/hermes/sessions?limit=20. Full URLs and // paths are rejected.',
+          description: 'Relative Hermes Fleet endpoint path from the operation manual, for example /api/hermes/sessions?limit=20. Full URLs and // paths are rejected.',
         },
         body: {
           type: ['object', 'array', 'string', 'number', 'boolean', 'null'],
@@ -828,7 +828,7 @@ const tools = [
   {
     name: 'hermes_studio_use_chat_run',
     toolset: 'use',
-    description: 'Start one user-requested Hermes Studio chat or coding-agent run through the HTTP bridge and wait for completion. Do not use this as an internal delegation or subtask mechanism.',
+    description: 'Start one user-requested Hermes Fleet chat or coding-agent run through the HTTP bridge and wait for completion. Do not use this as an internal delegation or subtask mechanism.',
     inputSchema: inputSchema({
         input: {
           oneOf: [
@@ -917,7 +917,7 @@ const tools = [
   {
     name: 'hermes_studio_use_sessions_list',
     toolset: 'use',
-    description: 'List Hermes Studio chat sessions for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
+    description: 'List Hermes Fleet chat sessions for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         limit: {
           type: 'number',
@@ -932,7 +932,7 @@ const tools = [
   {
     name: 'hermes_studio_use_sessions_count',
     toolset: 'use',
-    description: 'Count Hermes Studio chat sessions without returning the session list. Do not use this as an internal delegation mechanism.',
+    description: 'Count Hermes Fleet chat sessions without returning the session list. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         source: {
           type: 'string',
@@ -943,7 +943,7 @@ const tools = [
   {
     name: 'hermes_studio_use_usage_stats',
     toolset: 'use',
-    description: 'Query Hermes Studio usage totals, cost estimate, model breakdown, and daily trend for the selected profile.',
+    description: 'Query Hermes Fleet usage totals, cost estimate, model breakdown, and daily trend for the selected profile.',
     inputSchema: inputSchema({
         days: {
           type: 'number',
@@ -954,7 +954,7 @@ const tools = [
   {
     name: 'hermes_studio_use_session_get',
     toolset: 'use',
-    description: 'Get one Hermes Studio session by id for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
+    description: 'Get one Hermes Fleet session by id for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         session_id: {
           type: 'string',
@@ -965,7 +965,7 @@ const tools = [
   {
     name: 'hermes_studio_use_session_messages',
     toolset: 'use',
-    description: 'Get messages for one Hermes Studio conversation. By default returns user and assistant messages only. Do not use this as an internal delegation mechanism.',
+    description: 'Get messages for one Hermes Fleet conversation. By default returns user and assistant messages only. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         session_id: {
           type: 'string',
@@ -995,7 +995,7 @@ const tools = [
   {
     name: 'hermes_studio_use_session_delete',
     toolset: 'use',
-    description: 'Delete one Hermes Studio session by id for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
+    description: 'Delete one Hermes Fleet session by id for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         session_id: {
           type: 'string',
@@ -1006,7 +1006,7 @@ const tools = [
   {
     name: 'hermes_studio_use_session_rename',
     toolset: 'use',
-    description: 'Rename one Hermes Studio session title for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
+    description: 'Rename one Hermes Fleet session title for an explicit user-requested session operation. Do not use this as an internal delegation mechanism.',
     inputSchema: inputSchema({
         session_id: {
           type: 'string',
@@ -1021,13 +1021,13 @@ const tools = [
   {
     name: 'hermes_studio_use_profiles_list',
     toolset: 'use',
-    description: 'List Hermes Studio profiles.',
+    description: 'List Hermes Fleet profiles.',
     inputSchema: inputSchema(),
   },
   {
     name: 'hermes_studio_use_available_models',
     toolset: 'use',
-    description: 'List available Hermes Studio models for the selected profile as a compact provider/model summary. Use query to narrow results or include_details=true only when raw provider metadata is required.',
+    description: 'List available Hermes Fleet models for the selected profile as a compact provider/model summary. Use query to narrow results or include_details=true only when raw provider metadata is required.',
     inputSchema: inputSchema({
         query: {
           type: 'string',
@@ -1057,7 +1057,7 @@ const tools = [
   {
     name: 'hermes_studio_use_provider_add',
     toolset: 'use',
-    description: 'Add or update a Hermes Studio model provider for the selected profile, then make it the active default provider/model.',
+    description: 'Add or update a Hermes Fleet model provider for the selected profile, then make it the active default provider/model.',
     inputSchema: inputSchema({
         name: {
           type: 'string',
@@ -1093,7 +1093,7 @@ const tools = [
   {
     name: 'hermes_studio_use_provider_delete',
     toolset: 'use',
-    description: 'Delete a Hermes Studio model provider or clear a built-in provider credential for the selected profile.',
+    description: 'Delete a Hermes Fleet model provider or clear a built-in provider credential for the selected profile.',
     inputSchema: inputSchema({
         pool_key: {
           type: 'string',
@@ -1119,7 +1119,7 @@ const tools = [
   {
     name: 'hermes_studio_use_workflows_list',
     toolset: 'use',
-    description: 'List Hermes Studio workflows for the selected or requested profile.',
+    description: 'List Hermes Fleet workflows for the selected or requested profile.',
     inputSchema: inputSchema({
         profile: {
           type: 'string',
@@ -1130,7 +1130,7 @@ const tools = [
   {
     name: 'hermes_studio_use_workflow_get',
     toolset: 'use',
-    description: 'Get one Hermes Studio workflow by id.',
+    description: 'Get one Hermes Fleet workflow by id.',
     inputSchema: inputSchema({
         workflow_id: {
           type: 'string',
@@ -1141,7 +1141,7 @@ const tools = [
   {
     name: 'hermes_studio_use_workflow_create',
     toolset: 'use',
-    description: 'Create a Hermes Studio workflow with optional nodes, edges, viewport, workspace, and profile.',
+    description: 'Create a Hermes Fleet workflow with optional nodes, edges, viewport, workspace, and profile.',
     inputSchema: inputSchema({
         name: {
           type: 'string',
@@ -1175,7 +1175,7 @@ const tools = [
   {
     name: 'hermes_studio_use_workflow_update',
     toolset: 'use',
-    description: 'Update a Hermes Studio workflow name, workspace, nodes, edges, or viewport.',
+    description: 'Update a Hermes Fleet workflow name, workspace, nodes, edges, or viewport.',
     inputSchema: inputSchema({
         workflow_id: {
           type: 'string',
@@ -1209,7 +1209,7 @@ const tools = [
   {
     name: 'hermes_studio_use_workflow_delete',
     toolset: 'use',
-    description: 'Delete one Hermes Studio workflow by id, including its workflow run records.',
+    description: 'Delete one Hermes Fleet workflow by id, including its workflow run records.',
     inputSchema: inputSchema({
         workflow_id: {
           type: 'string',

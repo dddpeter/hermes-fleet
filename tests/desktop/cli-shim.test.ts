@@ -35,10 +35,10 @@ function tempHome(): string {
   return dir
 }
 
-describe('Hermes Studio CLI shim', () => {
+describe('Hermes Fleet CLI shim', () => {
   it('quotes Unix app paths and routes app, cli, web, and help commands', () => {
     const content = createShimContent(
-      "/Applications/Hermes Studio's.app/Contents/MacOS/Hermes Studio",
+      "/Applications/Hermes Fleet's.app/Contents/MacOS/Hermes Fleet",
       'darwin',
       'arm64',
       '0.15.2',
@@ -47,7 +47,7 @@ describe('Hermes Studio CLI shim', () => {
     )
 
     expect(content).toContain("--hermes-cli")
-    expect(content).toContain("APP='/Applications/Hermes Studio'\\''s.app/Contents/MacOS/Hermes Studio'")
+    expect(content).toContain("APP='/Applications/Hermes Fleet'\\''s.app/Contents/MacOS/Hermes Fleet'")
     expect(content).toContain("NODE='/runtime/node/bin/node'")
     expect(content).toContain("WEBUI_SCRIPT='/resources/webui/bin/hermes-web-ui.mjs'")
     expect(content).toContain('unset ELECTRON_RUN_AS_NODE')
@@ -61,7 +61,7 @@ describe('Hermes Studio CLI shim', () => {
 
   it('routes Windows cli and web subcommands through bundled runtime paths', () => {
     const content = createShimContent(
-      'C:\\Users\\Example\\AppData\\Local\\Programs\\Hermes Studio\\Hermes Studio.exe',
+      'C:\\Users\\Example\\AppData\\Local\\Programs\\Hermes Fleet\\Hermes Fleet.exe',
       'win32',
       'x64',
       undefined,
@@ -123,7 +123,7 @@ describe('Hermes Studio CLI shim', () => {
     const result = await installHermesStudioCliShim({
       homeDir,
       platform: 'darwin',
-      executablePath: '/Applications/Hermes Studio.app/Contents/MacOS/Hermes Studio',
+      executablePath: '/Applications/Hermes Fleet.app/Contents/MacOS/Hermes Fleet',
       nodePath: '/runtime/node/bin/node',
       webUiScriptPath: '/resources/webui/bin/hermes-web-ui.mjs',
       env: { PATH: '/usr/bin', SHELL: '/bin/zsh' },
@@ -162,9 +162,9 @@ describe('Hermes Studio CLI shim', () => {
     const result = await installHermesStudioCliShim({
       homeDir,
       platform: 'win32',
-      executablePath: 'C:\\Program Files\\Hermes Studio\\Hermes Studio.exe',
-      nodePath: 'C:\\Program Files\\Hermes Studio\\node.exe',
-      webUiScriptPath: 'C:\\Program Files\\Hermes Studio\\resources\\webui\\bin\\hermes-web-ui.mjs',
+      executablePath: 'C:\\Program Files\\Hermes Fleet\\Hermes Fleet.exe',
+      nodePath: 'C:\\Program Files\\Hermes Fleet\\node.exe',
+      webUiScriptPath: 'C:\\Program Files\\Hermes Fleet\\resources\\webui\\bin\\hermes-web-ui.mjs',
       env: { Path: existingPath },
     })
 
@@ -190,9 +190,9 @@ describe('Hermes Studio CLI shim', () => {
     const result = await installHermesStudioCliShim({
       homeDir,
       platform: 'win32',
-      executablePath: 'C:\\Program Files\\Hermes Studio\\Hermes Studio.exe',
-      nodePath: 'C:\\Program Files\\Hermes Studio\\node.exe',
-      webUiScriptPath: 'C:\\Program Files\\Hermes Studio\\resources\\webui\\bin\\hermes-web-ui.mjs',
+      executablePath: 'C:\\Program Files\\Hermes Fleet\\Hermes Fleet.exe',
+      nodePath: 'C:\\Program Files\\Hermes Fleet\\node.exe',
+      webUiScriptPath: 'C:\\Program Files\\Hermes Fleet\\resources\\webui\\bin\\hermes-web-ui.mjs',
       env: { Path: existingPath },
     })
 

@@ -1,7 +1,7 @@
 export default {
   // Login
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'Insira seu nome de usuario e senha para continuar.',
     placeholder: 'Token de acesso',
     submit: 'Entrar',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: 'Falha ao carregar versões remotas',
     downloadTasks: 'Tarefas de download',
     downloadStarted: 'Download iniciado',
-    activateSuccess: 'Seleção de versão salva. Reinicie o Hermes Studio para usá-la.',
+    activateSuccess: 'Seleção de versão salva. Reinicie o Hermes Fleet para usá-la.',
     jobStatus: {
       queued: 'Na fila',
       running: 'Em execução',
@@ -1983,7 +1983,7 @@ jobTriggered: 'Job acionado',
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Corrige falhas de execute_code com Hermes Agent 0.18.0 ao encaminhar o novo parametro has_host_access pelo wrapper de memoria de aprovacoes do Agent Bridge',
     new_0_6_24_1: 'Esta versao cobre os PRs mesclados depois da 0.6.23 e melhora entrada de chat, visibilidade de workspaces, gestao de plugins, modelos padrao e revisao de diffs',
     new_0_6_24_2: 'As entradas de chat individual e em grupo usam uma barra integrada, controles compactos de modelo, configuracoes agrupadas, uso de contexto mais claro, melhor mobile chrome e redimensionamento manual restaurado no chat individual',

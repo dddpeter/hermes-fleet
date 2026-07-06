@@ -28,9 +28,6 @@ Use this checklist before pushing or updating a pull request.
 ## Release And CI
 
 - Workflow changes were checked with `npm run harness:check`.
-- Desktop release artifacts remain platform-specific.
-- `fail_on_unmatched_files: true` is preserved when each matrix target has its
-  own expected artifact list.
 - Package manifest changes have matching lockfile changes when dependencies
   change.
 

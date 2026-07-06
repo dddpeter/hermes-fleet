@@ -1,7 +1,7 @@
 export default {
   // Login
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'Geben Sie Benutzername und Passwort ein, um fortzufahren.',
     placeholder: 'Zugangs-Token',
     submit: 'Anmelden',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: 'Remote-Versionen konnten nicht geladen werden',
     downloadTasks: 'Download-Aufgaben',
     downloadStarted: 'Download gestartet',
-    activateSuccess: 'Versionsauswahl gespeichert. Starten Sie Hermes Studio neu, um sie zu verwenden.',
+    activateSuccess: 'Versionsauswahl gespeichert. Starten Sie Hermes Fleet neu, um sie zu verwenden.',
     jobStatus: {
       queued: 'In Warteschlange',
       running: 'Läuft',
@@ -1983,7 +1983,7 @@ jobTriggered: 'Job ausgelost',
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Behebt execute_code-Fehler mit Hermes Agent 0.18.0, indem der neue Parameter has_host_access durch den Agent-Bridge-Approval-Memory-Wrapper weitergereicht wird',
     new_0_6_24_1: 'Diese Version umfasst die nach 0.6.23 gemergten PRs und verbessert Chat-Eingabe, Workspace-Sichtbarkeit, Plugin-Verwaltung, Standardmodelle und Workspace-Diff-Ansicht',
     new_0_6_24_2: 'Einzel- und Gruppenchat-Eingaben nutzen eine integrierte Toolbar, kompakte Modellsteuerung, gebuendelte Eingabeeinstellungen, klarere Context-Nutzung, stabileres Mobile Chrome und wiederhergestelltes manuelles Resize im Einzelchat',

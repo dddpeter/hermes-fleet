@@ -20,7 +20,7 @@ const { t } = useI18n()
         <div class="footer-links">
           <a
             class="footer-social"
-            href="https://github.com/EKKOLearnAI/hermes-studio"
+            href="https://gitee.com/dddpeter/hermes-fleet"
             target="_blank"
             rel="noopener"
             :aria-label="t('footer.github')"

@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: Documentation
-    url: https://github.com/EKKOLearnAI/hermes-studio#readme
+    url: https://gitee.com/dddpeter/hermes-fleet#readme
     about: Please check the documentation first
   - name: GitHub Discussions
-    url: https://github.com/EKKOLearnAI/hermes-studio/discussions
+    url: https://gitee.com/dddpeter/hermes-fleet/discussions
     about: Use GitHub Discussions for questions that don't fit as issues

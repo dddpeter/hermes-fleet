@@ -50,7 +50,7 @@ onMounted(() => {
     <div class="desktop-titlebar__drag">
       <div class="desktop-titlebar__brand">
         <img class="desktop-titlebar__logo" src="/logo.png" alt="" draggable="false">
-        <span class="desktop-titlebar__title">Hermes Studio</span>
+        <span class="desktop-titlebar__title">Hermes Fleet</span>
       </div>
     </div>
     <div v-if="showWindowButtons" class="desktop-titlebar__controls" @dblclick.stop>

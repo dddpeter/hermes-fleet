@@ -1,12 +1,12 @@
-# Hermes Studio
+# Hermes Fleet
 
-Electron desktop distribution for Hermes Studio.
+Electron desktop distribution for Hermes Fleet.
 
 ## Install
 
 Download the latest macOS, Windows, or Linux installer for your CPU
 architecture from the project
-[GitHub Releases](https://github.com/EKKOLearnAI/hermes-studio/releases/latest).
+[GitHub Releases](https://gitee.com/dddpeter/hermes-fleet/releases/latest).
 
 The desktop app bundles the Web UI runtime and launches it locally from the
 native shell app.
@@ -17,14 +17,14 @@ After the packaged desktop app starts, it installs managed command shims:
 
 | Command | Description |
 | --- | --- |
-| `hermes-studio` | Open the Hermes Studio desktop app |
-| `hermes-studio cli ...` | Run the bundled Hermes Agent CLI |
-| `hermes-studio web ...` | Run the bundled `hermes-web-ui` command |
-| `hermes-studio -h` | Show wrapper help |
+| `hermes-fleet` | Open the Hermes Fleet desktop app |
+| `hermes-fleet cli ...` | Run the bundled Hermes Agent CLI |
+| `hermes-fleet web ...` | Run the bundled `hermes-web-ui` command |
+| `hermes-fleet -h` | Show wrapper help |
 | `hermes-studio-mcp` | Run the managed Web UI MCP bridge |
 
-Use `hermes-studio cli -h` for Hermes Agent CLI help and
-`hermes-studio web -h` for Web UI CLI help.
+Use `hermes-fleet cli -h` for Hermes Agent CLI help and
+`hermes-fleet web -h` for Web UI CLI help.
 
 ## Data directories
 
@@ -47,7 +47,7 @@ export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
 export ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/
 ```
 
-If GitHub release downloads are slow, `fetch-python.mjs` can also use a compatible
+If GitHub release downloads are slow, `scripts/fetch-python.mjs` can also use a compatible
 python-build-standalone release mirror:
 
 ```sh

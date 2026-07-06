@@ -15,7 +15,7 @@ const activeTab = ref<'desktop' | 'npm' | 'source'>('desktop')
 
 const releaseVersion = __WEBSITE_DOWNLOAD_VERSION__.replace(/^v/, '')
 const releaseTag = `v${releaseVersion}`
-const releaseBaseUrl = 'https://github.com/EKKOLearnAI/hermes-studio/releases'
+const releaseBaseUrl = 'https://gitee.com/dddpeter/hermes-fleet/releases'
 const releaseUrl = `${releaseBaseUrl}/tag/${releaseTag}`
 const githubDownloadUrl = `${releaseBaseUrl}/download/${releaseTag}`
 const cloudflareDownloadUrl = `https://download.ekkolearnai.com/${releaseTag}`

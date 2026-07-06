@@ -1,7 +1,7 @@
 export default {
   // 로그인
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: '계속하려면 사용자 이름과 비밀번호를 입력하세요.',
     placeholder: '액세스 토큰',
     submit: '로그인',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: '원격 버전을 불러오지 못했습니다',
     downloadTasks: '다운로드 작업',
     downloadStarted: '다운로드를 시작했습니다',
-    activateSuccess: '버전 선택이 저장되었습니다. Hermes Studio를 다시 시작하면 적용됩니다.',
+    activateSuccess: '버전 선택이 저장되었습니다. Hermes Fleet를 다시 시작하면 적용됩니다.',
     jobStatus: {
       queued: '대기 중',
       running: '실행 중',
@@ -1982,7 +1982,7 @@ export default {
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Hermes Agent 0.18.0에서 Agent Bridge 승인 메모리 wrapper가 새 has_host_access 매개변수를 전달하지 않아 execute_code가 실패하던 문제를 수정했습니다',
     new_0_6_24_1: '이번 릴리스는 0.6.23 이후 병합된 PR을 반영하며 채팅 입력, workspace 표시, 플러그인 관리, 기본 모델, workspace diff 확인을 개선합니다',
     new_0_6_24_2: '단일 채팅과 그룹 채팅 입력 영역은 통합 툴바, 간결한 모델 컨트롤, 모아진 입력 설정, 더 명확한 context 사용량, 모바일 chrome, 단일 채팅 수동 높이 조절 복구를 포함합니다',

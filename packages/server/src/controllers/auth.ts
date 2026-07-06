@@ -239,7 +239,7 @@ function requestBaseUrl(ctx: Context): string | undefined {
 /**
  * POST /api/auth/mcu-login
  * Authenticate with the existing username/password login for an MCU/device.
- * When a legacy relay URL is provided, connect this Hermes Studio instance to it.
+ * When a legacy relay URL is provided, connect this Hermes Fleet instance to it.
  * Body: { token, id, account, password, url? }.
  */
 export async function microcontrollerLogin(ctx: Context) {

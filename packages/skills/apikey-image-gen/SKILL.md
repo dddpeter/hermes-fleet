@@ -58,8 +58,6 @@ Common local ports:
 - Desktop app default: `http://127.0.0.1:8748`.
 - Custom port: set `HERMES_WEB_UI_URL` to the full base URL, or set `PORT` to use `http://127.0.0.1:${PORT}`.
 
-When Hermes Web UI is running from Docker Compose, the default external URL is `http://127.0.0.1:6060`.
-
 Authentication:
 
 Send the Hermes Web UI server bearer token. This token is accepted only by Hermes Web UI media generation endpoints for agent skills; it is not a general Web UI login token.

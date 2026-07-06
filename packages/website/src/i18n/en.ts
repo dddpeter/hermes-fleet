@@ -1,6 +1,6 @@
 export default {
   brand: {
-    name: 'Hermes Studio',
+    name: 'Hermes Fleet',
     logoAlt: 'Hermes',
   },
   ui: {
@@ -30,7 +30,7 @@ export default {
       deploy: 'Deploy',
     },
     badge: 'Local-first AI Agent Workspace',
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     subtitle: 'A desktop app and local control plane for Hermes Agent. Chat, manage profiles, run coding agents, inspect files, automate jobs, and keep your runtime under your control.',
     cta: 'Download Desktop',
     docsCta: 'Read Docs',
@@ -41,11 +41,11 @@ export default {
     docsTitle: 'Documentation',
     docsLibrary: 'Library',
     install: 'npm install -g hermes-web-ui',
-    previewAlt: 'Hermes Studio dashboard preview',
+    previewAlt: 'Hermes Fleet dashboard preview',
   },
   features: {
     title: 'One Local Console for Hermes Agent',
-    desc: 'Hermes Studio brings chat, runtime management, automation, files, coding agents, and release-ready desktop distribution into one workspace.',
+    desc: 'Hermes Fleet brings chat, runtime management, automation, files, coding agents, and release-ready desktop distribution into one workspace.',
     streaming: {
       title: 'Agent Chat',
       desc: 'Streaming Hermes Agent conversations with sessions, Markdown, tool traces, uploads, downloads, model badges, and context usage.',
@@ -84,7 +84,7 @@ export default {
     },
     quickInstall: {
       title: 'Desktop Runtime',
-      desc: 'Windows, macOS, and Linux desktop builds bundle the Web UI runtime and manage Hermes Studio state separately from Hermes Agent data.',
+      desc: 'Windows, macOS, and Linux desktop builds bundle the Web UI runtime and manage Hermes Fleet state separately from Hermes Agent data.',
     },
     i18n: {
       title: 'Coding Agents & MCP',
@@ -116,22 +116,22 @@ export default {
     items: [
       {
         src: '/image.gif',
-        alt: 'Hermes Studio product walkthrough',
-        title: 'Hermes Studio Workflow',
+        alt: 'Hermes Fleet product walkthrough',
+        title: 'Hermes Fleet Workflow',
         desc: 'Chat with coding agents, preview versions, manage runtime assets, and browse your workspace in one app.',
       },
     ],
   },
   install: {
     title: 'Quick Start',
-    desc: 'Download the desktop app or run Hermes Studio yourself.',
+    desc: 'Download the desktop app or run Hermes Fleet yourself.',
     desktop: {
       title: 'Desktop',
       download: 'Download',
       githubDownload: 'GitHub Download',
       cloudflareDownload: 'Cloudflare Download',
       allDownloads: 'View all release assets',
-      prereq: 'Desktop builds bundle the Hermes Studio runtime.',
+      prereq: 'Desktop builds bundle the Hermes Fleet runtime.',
       downloads: [
         {
           title: 'macOS Apple Silicon',
@@ -172,7 +172,7 @@ export default {
     },
     source: {
       title: 'From Source',
-      cmd1: 'git clone https://github.com/EKKOLearnAI/hermes-studio.git',
+      cmd1: 'git clone https://gitee.com/dddpeter/hermes-fleet.git',
       cmd2: 'cd hermes-web-ui && npm install && npm run dev',
     },
     prereq: 'Requires Node.js >= 23',
@@ -207,14 +207,14 @@ export default {
     },
     gettingStarted: {
       title: 'Getting Started',
-      intro: 'Hermes Studio is a self-hosted web dashboard for managing AI conversations, platform channels, scheduled jobs, and more. It wraps the Hermes Agent CLI and provides a beautiful web interface.',
+      intro: 'Hermes Fleet is a self-hosted web dashboard for managing AI conversations, platform channels, scheduled jobs, and more. It wraps the Hermes Agent CLI and provides a beautiful web interface.',
       install: {
         title: 'Installation',
         content: 'Install globally via npm. Node.js 23 or higher is required.',
       },
       firstRun: {
         title: 'First Run',
-        content: 'On first start, Hermes Studio will automatically generate an auth token, initialize local data, start the Hermes agent bridge, and open the dashboard in your browser.',
+        content: 'On first start, Hermes Fleet will automatically generate an auth token, initialize local data, start the Hermes agent bridge, and open the dashboard in your browser.',
       },
       login: {
         title: 'Login',
@@ -223,13 +223,13 @@ export default {
     },
     configuration: {
       title: 'Configuration',
-      intro: 'Hermes Studio can be configured via environment variables.',
+      intro: 'Hermes Fleet can be configured via environment variables.',
       envVars: {
         title: 'Environment Variables',
         rows: [
           ['PORT', 'Server listen port (default: 8648)'],
           ['BIND_HOST', 'Server bind host (default: 0.0.0.0). Set :: explicitly to enable IPv6 listening.'],
-          ['HERMES_WEB_UI_HOME', 'Hermes Studio data home for auth token, credentials, logs, DB, and default uploads'],
+          ['HERMES_WEB_UI_HOME', 'Hermes Fleet data home for auth token, credentials, logs, DB, and default uploads'],
           ['HERMES_WEBUI_STATE_DIR', 'Compatibility alias for HERMES_WEB_UI_HOME'],
           ['HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT', 'Disable startup injection of the managed hermes-studio MCP server into Hermes profile configs'],
           ['HERMES_WEB_UI_ALLOW_TRANSIENT_MCP_AUTOINJECT', 'Allow managed MCP injection when HERMES_WEB_UI_HOME is under a temporary directory, such as Version Preview runtimes'],
@@ -270,7 +270,7 @@ export default {
           ['HERMES_WEB_UI_MANAGED_GATEWAY', 'Controls Web UI-managed Hermes gateway handling. Enabled by default; set 0/false/off to use hermes gateway start'],
           ['HERMES_WEB_UI_DISABLE_GATEWAY_AUTOSTART', 'Skip startup gateway checks/autostart for dashboard-only deployments where another service owns Hermes gateway lifecycle'],
           ['HERMES_WEB_UI_DISABLE_SKILL_INJECTION', 'Skip startup bundled skill injection when skills are managed outside Hermes Web UI. Enabled injection only updates Web UI-managed or identical bundled copies; local edits are skipped'],
-          ['HERMES_WEB_UI_STOP_GATEWAYS_ON_SHUTDOWN', 'Controls whether Hermes Studio shutdown also stops managed gateway processes'],
+          ['HERMES_WEB_UI_STOP_GATEWAYS_ON_SHUTDOWN', 'Controls whether Hermes Fleet shutdown also stops managed gateway processes'],
           ['HERMES_GATEWAY_URL / GATEWAY_URL', 'Explicit Hermes gateway upstream URL for proxy routes'],
           ['GATEWAY_HOST', 'Default Hermes gateway upstream host for proxy routes'],
           ['GATEWAY_PORT', 'Default Hermes gateway upstream port for proxy routes'],
@@ -283,7 +283,7 @@ export default {
       },
       gateway: {
         title: 'Agent Bridge Runtime',
-        content: 'Chat runs are handled through the Hermes agent bridge, which runs alongside the Hermes Studio server and talks directly to the Hermes Agent runtime. HERMES_AGENT_BRIDGE_ENDPOINT controls the Node-to-broker address, while HERMES_AGENT_BRIDGE_WORKER_TRANSPORT controls the broker-to-profile-worker transport. Web UI shutdown and CLI/app restarts stop the bridge broker by default; set HERMES_AGENT_BRIDGE_STOP_ON_SHUTDOWN=0 only when you intentionally want to preserve bridge sessions across restart. Switching the frontend Hermes Profile changes later request context only; it does not restart the bridge or clear other running tasks.',
+        content: 'Chat runs are handled through the Hermes agent bridge, which runs alongside the Hermes Fleet server and talks directly to the Hermes Agent runtime. HERMES_AGENT_BRIDGE_ENDPOINT controls the Node-to-broker address, while HERMES_AGENT_BRIDGE_WORKER_TRANSPORT controls the broker-to-profile-worker transport. Web UI shutdown and CLI/app restarts stop the bridge broker by default; set HERMES_AGENT_BRIDGE_STOP_ON_SHUTDOWN=0 only when you intentionally want to preserve bridge sessions across restart. Switching the frontend Hermes Profile changes later request context only; it does not restart the bridge or clear other running tasks.',
       },
       profiles: {
         title: 'Profiles',
@@ -292,10 +292,10 @@ export default {
     },
     features: {
       title: 'Features',
-      intro: 'Explore the core features of Hermes Studio.',
+      intro: 'Explore the core features of Hermes Fleet.',
       chat: {
         title: 'AI Chat',
-        content: 'Real-time chat streaming over Socket.IO /chat-run. Supports multi-session management, Markdown rendering with syntax highlighting, tool call inspection, profile-scoped upload, path-based download, and Ctrl+K search across the Hermes Studio local session database.',
+        content: 'Real-time chat streaming over Socket.IO /chat-run. Supports multi-session management, Markdown rendering with syntax highlighting, tool call inspection, profile-scoped upload, path-based download, and Ctrl+K search across the Hermes Fleet local session database.',
       },
       kanban: {
         title: 'Kanban Board',
@@ -331,8 +331,8 @@ export default {
       },
     },
     hermesStudioManual: {
-      title: 'Hermes Studio Client Manual',
-      intro: 'This page publishes the complete Hermes Studio 0.6.12 client operations manual. The full manual is currently authored in Chinese and covers day-to-day usage, configuration, operations, acceptance review, internal training, visible navigation, dialogs, status pages, key actions, common workflows, and risk notes.',
+      title: 'Hermes Fleet Client Manual',
+      intro: 'This page publishes the complete Hermes Fleet 0.6.12 client operations manual. The full manual is currently authored in Chinese and covers day-to-day usage, configuration, operations, acceptance review, internal training, visible navigation, dialogs, status pages, key actions, common workflows, and risk notes.',
       open: {
         title: 'Open the full manual',
         content: 'The uploaded manual preserves the original HTML layout, annotated screenshots, tables, and PDF export. Use the HTML version for online browsing and the PDF version for offline review, archiving, or training distribution.',
@@ -352,7 +352,7 @@ export default {
       scope: {
         title: 'Scope',
         rows: [
-          ['Version', 'Hermes Studio 0.6.12 client operations manual'],
+          ['Version', 'Hermes Fleet 0.6.12 client operations manual'],
           ['Language', 'Full manual in Chinese, with bilingual website entry copy'],
           ['Coverage', 'Login, chat, history, memory, skills, plugins, files, terminal, jobs, group chat, Kanban, usage, logs, MCP, platform integrations, devices, settings, backup, security, and troubleshooting'],
           ['Audience', 'Individual users, administrators, support teams, acceptance reviewers, and internal training teams'],
@@ -365,7 +365,7 @@ export default {
     },
     esp32Intro: {
       title: 'Hermes ESP32-C3 Device Intro',
-      intro: 'This page publishes the public introduction for the Hermes ESP32-C3 desktop AI conversation box. The device handles the small display, microphone, speaker, physical buttons, and local network connection, while Hermes Studio handles model access, speech recognition, speech synthesis, and session execution.',
+      intro: 'This page publishes the public introduction for the Hermes ESP32-C3 desktop AI conversation box. The device handles the small display, microphone, speaker, physical buttons, and local network connection, while Hermes Fleet handles model access, speech recognition, speech synthesis, and session execution.',
       open: {
         title: 'Open the full intro page',
         content: 'The uploaded intro page preserves the original HTML layout, product visuals, setup flow, specification notes, pre-purchase checklist, and FAQ. It is useful for public presentation, handoff notes, and quick user orientation.',
@@ -373,26 +373,26 @@ export default {
           {
             label: 'Open the Chinese ESP32 intro page',
             href: '/docs/hermes-esp32-intro/index.html',
-            description: 'Includes product visuals, hardware highlights, Wi-Fi provisioning notes, Hermes Studio connection guidance, specifications, and FAQ.',
+            description: 'Includes product visuals, hardware highlights, Wi-Fi provisioning notes, Hermes Fleet connection guidance, specifications, and FAQ.',
           },
         ],
       },
       overview: {
         title: 'Device positioning',
-        content: 'This is a desktop hardware entry point for Hermes Studio, not an offline standalone large-model device. The ESP32-C3 provides local interaction and status feedback, while AI capability comes from Hermes Studio running on a computer or server plus the model, STT, and TTS services configured by the user.',
+        content: 'This is a desktop hardware entry point for Hermes Fleet, not an offline standalone large-model device. The ESP32-C3 provides local interaction and status feedback, while AI capability comes from Hermes Fleet running on a computer or server plus the model, STT, and TTS services configured by the user.',
       },
       requirements: {
         title: 'Requirements',
         rows: [
-          ['Network', 'The ESP32 device and Hermes Studio should communicate on the same local network.'],
+          ['Network', 'The ESP32 device and Hermes Fleet should communicate on the same local network.'],
           ['Service address', 'Enter the computer or server LAN IP plus port on the device page; do not use 127.0.0.1.'],
-          ['Voice capability', 'Hermes Studio needs working speech recognition, speech synthesis, and model services.'],
-          ['Best fit', 'Built for Hermes Studio users, ESP32/Arduino/PlatformIO makers, open hardware customization, and desktop AI interaction demos.'],
+          ['Voice capability', 'Hermes Fleet needs working speech recognition, speech synthesis, and model services.'],
+          ['Best fit', 'Built for Hermes Fleet users, ESP32/Arduino/PlatformIO makers, open hardware customization, and desktop AI interaction demos.'],
         ],
       },
       maintenance: {
         title: 'Maintenance note',
-        content: 'If firmware behavior, provisioning pages, ports, device visuals, or the Hermes Studio device connection flow changes, update the static HTML asset and this page scope together.',
+        content: 'If firmware behavior, provisioning pages, ports, device visuals, or the Hermes Fleet device connection flow changes, update the static HTML asset and this page scope together.',
       },
     },
     platforms: {
@@ -433,7 +433,7 @@ export default {
     },
     api: {
       title: 'API Reference',
-      intro: 'Hermes Studio provides a local BFF API for the dashboard and Socket.IO endpoints for streaming chat.',
+      intro: 'Hermes Fleet provides a local BFF API for the dashboard and Socket.IO endpoints for streaming chat.',
       local: {
         title: 'Local BFF Endpoints',
         content: 'The Koa server handles session management, profile CRUD, account- and profile-scoped management, config read/write, log access, skill listing, memory operations, and static assets.',

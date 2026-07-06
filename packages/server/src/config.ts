@@ -30,7 +30,7 @@ import { homedir } from 'os'
  * - HERMES_WEB_UI_STOP_GATEWAYS_ON_SHUTDOWN: Whether Web UI shutdown also stops managed gateways.
  * - HERMES_WEB_UI_GATEWAY_PORT_BASE: Base listen port for the default profile's managed gateway. Other profiles are assigned a deterministic offset above this base so multiple native gateways coexist. Default: 8642.
  * - HERMES_WEB_UI_GATEWAY_LOG_DIR: Directory for per-profile managed gateway logs (gateway-<profile>.log). Default: <HERMES_WEB_UI_HOME>/logs.
- * - HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT: Disable Hermes Studio MCP config injection.
+ * - HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT: Disable Hermes Fleet MCP config injection.
  * - HERMES_WEB_UI_ALLOW_TRANSIENT_MCP_AUTOINJECT: Allow MCP injection when HERMES_WEB_UI_HOME is under a temp dir.
  * - HERMES_LAN_DISCOVERY_ENABLED: Set false/0/off to disable UDP LAN discovery responder.
  * - HERMES_LAN_DISCOVERY_HTTP_PORTS: HTTP ports to probe during UDP discovery scans. Default: 8648,8748 plus current PORT.

@@ -34,7 +34,7 @@ agent can discover without chat history.
 - Facts that future agents must know to work safely.
 - Checklists that prevent repeated PR review comments.
 - Scripts that fail fast on repository-wide invariants.
-- Runbooks for local, CI, release, and desktop packaging flows.
+- Runbooks for local, CI, and release flows.
 
 Do not put long implementation notes in `AGENTS.md`. Add them under `docs/` and
 link to them from the map.

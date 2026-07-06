@@ -1,7 +1,7 @@
 export default {
   // 登入
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: '輸入使用者名稱和密碼以繼續。',
     placeholder: '存取權杖',
     submit: '登入',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: '遠端版本載入失敗',
     downloadTasks: '下載任務',
     downloadStarted: '已開始下載',
-    activateSuccess: '版本選擇已儲存，重啟 Hermes Studio 後生效。',
+    activateSuccess: '版本選擇已儲存，重啟 Hermes Fleet 後生效。',
     jobStatus: {
       queued: '排隊中',
       running: '下載中',
@@ -2373,7 +2373,7 @@ export default {
     new_0_6_26_3: 'Coding Agent 會話現在更清楚顯示 reasoning 與 context 設定，持久化 API mode，避免 Codex 誤用 app-server API mode，並修復繼續對話後上下文用量跳動',
     new_0_6_26_4: 'Journey 新增學習圖譜視圖並打磨圖譜互動，群聊新功能線也補上基線測試覆蓋',
     new_0_6_26_5: '桌面端可靠性持續提升：修復登入持久化與重置流程、Windows worker 動態連接埠兜底、stdout/stderr EPIPE 處理，並隔離 ESP32-C3 v1 韌體打包',
-    new_0_6_26_6: 'Hermes Studio MCP 的 available-models 預設改為精簡摘要，支援過濾與明確完整詳情參數，避免大量模型資料塞進 agent 上下文',
+    new_0_6_26_6: 'Hermes Fleet MCP 的 available-models 預設改為精簡摘要，支援過濾與明確完整詳情參數，避免大量模型資料塞進 agent 上下文',
     new_0_6_25_1: '修復 Hermes Agent 0.18.0 下 execute_code 因 Agent Bridge 審批記憶 wrapper 未轉發新的 has_host_access 參數而失敗的問題',
     new_0_6_24_1: '本版本彙整 0.6.23 之後合併的 PR，重點改進聊天輸入區、工作區可見性、外掛管理、預設模型和工作區 diff 查看體驗',
     new_0_6_24_2: '單聊和群聊輸入區更新為整合式工具列，模型選擇更精簡，輸入設定集中管理，上下文用量更清楚，行動端樣式更穩，並恢復單聊輸入框手動拖曳高度',

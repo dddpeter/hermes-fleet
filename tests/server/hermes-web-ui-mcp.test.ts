@@ -308,7 +308,7 @@ describe('hermes-web-ui MCP server', () => {
     expect(stdout.trim()).toBe(`hermes-studio-mcp v${pkg.version}`)
   })
 
-  it('exposes curated Hermes Studio use tools in the use toolset', async () => {
+  it('exposes curated Hermes Fleet use tools in the use toolset', async () => {
     const server = createServer((req, res) => {
       res.setHeader('content-type', 'application/json')
       if (req.url === '/api/chat-run/runs') {

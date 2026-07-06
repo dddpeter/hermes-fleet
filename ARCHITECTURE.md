@@ -11,7 +11,7 @@ backend, and an Electron desktop distribution around Hermes Agent.
 | Server | `packages/server/src` | HTTP API, auth, Socket.IO, SQLite stores, file access, Hermes runtime integration. |
 | Desktop | `packages/desktop` | Electron shell, local Web UI server bootstrap, updater, bundled Python/Hermes runtime. |
 | Tests | `tests` | Vitest unit/integration tests and Playwright browser tests. |
-| CI | `.github/workflows` | Build, e2e, lockfile, and desktop release automation. |
+| CI | `.github/workflows` | Build, e2e, lockfile, and Web UI release automation. |
 
 ## Request Flow
 
@@ -66,22 +66,16 @@ Frontend rules:
 - Add visible text to all locale files.
 - Keep component styles scoped unless the style is intentionally global.
 
-## Desktop Release Flow
-
-Desktop packaging is intentionally split:
+## Release Flow
 
 - Pull requests run the web UI build and tests in `.github/workflows/build.yml`.
 - Published GitHub Releases run Web UI artifact packaging without
   marking the release as GitHub latest.
-- Manual dispatches run full desktop artifact packaging in `.github/workflows/desktop-release.yml`.
-- `.github/workflows/desktop-manual-build.yml` builds one desktop target for targeted repairs or re-runs.
-- Each release matrix target uploads only the artifact globs for its own platform.
-- A successful full desktop release marks the target GitHub Release as latest after all desktop artifacts
-  and the merged macOS updater manifest have been uploaded.
 
-Do not make a Windows job require macOS `.dmg` files or a Linux job require
-Windows installers. Keep `fail_on_unmatched_files: true` where platform-specific
-artifact lists make the expectation explicit.
+The Electron desktop distribution under `packages/desktop` is kept in the
+repository for reference but its CI packaging workflows are no longer active.
+Desktop builds can still be produced locally with the `packages/desktop`
+scripts if needed.
 
 ## Validation Surface
 

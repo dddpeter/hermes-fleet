@@ -1,5 +1,5 @@
 <p align="center">
-  <strong>Hermes Studio</strong>
+  <strong>Hermes Fleet</strong>
   <a href="./README.md">English</a>
 </p>
 
@@ -10,32 +10,24 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/releases/latest">下载 Hermes Studio 桌面版</a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet/releases/latest">下载 Hermes Fleet 桌面版</a>
   ·
   <code>npm install -g hermes-web-ui && hermes-web-ui start</code>
 </p>
 
 <p align="center">
-  <img src="https://github.com/EKKOLearnAI/hermes-studio/blob/main/packages/client/src/assets/image.gif" alt="Hermes Web UI 演示" width="680"/>
-</p>
-
-<p align="center">
-  <strong>移动端</strong>
-</p>
-
-<p align="center">
-  <video src="https://github.com/EKKOLearnAI/hermes-studio/blob/main/packages/client/src/assets/video.mp4?raw=true" width="360" controls></video>
+  <img src="https://gitee.com/dddpeter/hermes-fleet/blob/main/packages/client/src/assets/image.gif" alt="Hermes Web UI 演示" width="680"/>
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/hermes-web-ui"><img src="https://img.shields.io/npm/v/hermes-web-ui?style=flat-square&color=blue" alt="npm 版本"/></a>
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/hermes-web-ui?style=flat-square" alt="许可证"/></a>
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/stargazers"><img src="https://img.shields.io/github/stars/EKKOLearnAI/hermes-studio?style=flat-square" alt="Star"/></a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/hermes-web-ui?style=flat-square" alt="许可证"/></a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet"><img src="https://gitee.com/dddpeter/hermes-fleet/badge/star.svg?theme=dark" alt="Star"/></a>
 </p>
 
 ## 核心能力
 
-| 模块 | Hermes Studio 能做什么 |
+| 模块 | Hermes Fleet 能做什么 |
 |---|---|
 | Agent 聊天 | 运行 Hermes Agent 对话，支持流式回复、工具调用轨迹、文件上传下载和本地持久化会话。 |
 | 本地控制台 | 在一个仪表盘中管理 Profile、Provider、模型、凭证、记忆、技能、插件、日志和运行时设置。 |
@@ -157,7 +149,7 @@
 ### 管理与运行时
 
 - 设备和局域网 Peer 页面，用于本地网络发现和 Peer 工具能力
-- MCP 管理器，用于托管的 `hermes-studio` MCP Server 和 Profile 自动注入
+- MCP 管理器，用于托管的 `hermes-fleet` MCP Server 和 Profile 自动注入
 - Runtime Version 和 Version Preview 工具，用于隔离测试新版本
 - 面向超级管理员的性能监控视图
 
@@ -217,10 +209,10 @@ hermes-web-ui reset-default-login
 ### 桌面应用与自动更新
 
 - Windows、macOS 和 Linux 原生 Electron 桌面壳
-- 内置 Web UI 运行时，并自动启动本地 Hermes Studio 服务
+- 内置 Web UI 运行时，并自动启动本地 Hermes Fleet 服务
 - 桌面自动更新优先使用 Cloudflare 下载端点获取更新元数据和安装包
 - 如果 Cloudflare 更新源不可用，会回退到 GitHub Releases `latest` 资源
-- Windows 升级时会先尝试关闭已有 Hermes Studio 进程，再替换文件
+- Windows 升级时会先尝试关闭已有 Hermes Fleet 进程，再替换文件
 
 ---
 
@@ -228,8 +220,8 @@ hermes-web-ui reset-default-login
 
 ### 桌面应用（推荐）
 
-从 [GitHub Releases](https://github.com/EKKOLearnAI/hermes-studio/releases/latest)
-下载最新的 **Hermes Studio** 桌面安装包。
+从 [GitHub Releases](https://gitee.com/dddpeter/hermes-fleet/releases/latest)
+下载最新的 **Hermes Fleet** 桌面安装包。
 
 桌面版会发布 macOS、Windows 和 Linux 构建；适用时会区分不同 CPU 架构。
 桌面应用内置 Web UI 运行时，Hermes Agent 数据会保存到原生 Hermes 目录：
@@ -245,18 +237,18 @@ hermes-web-ui reset-default-login
 
 | 命令 | 说明 |
 |---|---|
-| `hermes-studio` | 打开 Hermes Studio 桌面应用 |
-| `hermes-studio cli ...` | 运行内置 Hermes Agent CLI |
-| `hermes-studio web ...` | 运行内置 `hermes-web-ui` 命令 |
-| `hermes-studio -h` | 显示 wrapper 帮助 |
+| `hermes-fleet` | 打开 Hermes Fleet 桌面应用 |
+| `hermes-fleet cli ...` | 运行内置 Hermes Agent CLI |
+| `hermes-fleet web ...` | 运行内置 `hermes-web-ui` 命令 |
+| `hermes-fleet -h` | 显示 wrapper 帮助 |
 | `hermes-studio-mcp` | 运行受管 Web UI MCP bridge |
 
-使用 `hermes-studio cli -h` 查看 Hermes Agent CLI 帮助，使用
-`hermes-studio web -h` 查看 Web UI CLI 帮助。
+使用 `hermes-fleet cli -h` 查看 Hermes Agent CLI 帮助，使用
+`hermes-fleet web -h` 查看 Web UI CLI 帮助。
 
 桌面自动更新会优先读取 `https://download.ekkolearnai.com/latest`。
 如果该端点不可用，更新器会回退到
-`https://github.com/EKKOLearnAI/hermes-studio/releases/latest/download`。
+`https://gitee.com/dddpeter/hermes-fleet/releases/latest/download`。
 
 ### npm 安装
 
@@ -297,7 +289,7 @@ Web UI 启动后端聊天能力时，会优先使用包含 `run_agent.py` 的源
 | `BIND_HOST` | `0.0.0.0` | Web UI 绑定地址。如需 IPv6，可显式设置为 `::`。 |
 | `HERMES_WEB_UI_HOME` | `~/.hermes-web-ui` | Web UI 数据目录，用于认证 token、登录凭据、日志、数据库和默认上传目录。兼容支持 `HERMES_WEBUI_STATE_DIR` 作为别名。 |
 | `HERMES_WEBUI_STATE_DIR` | 未设置 | `HERMES_WEB_UI_HOME` 的兼容别名。 |
-| `HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT` | 未设置 | 关闭启动时向 Hermes profile 配置自动注入托管的 `hermes-studio` MCP server。 |
+| `HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT` | 未设置 | 关闭启动时向 Hermes profile 配置自动注入托管的 `hermes-fleet` MCP server。 |
 | `HERMES_WEB_UI_ALLOW_TRANSIENT_MCP_AUTOINJECT` | 未设置 | 当 `HERMES_WEB_UI_HOME` 位于临时目录（例如 Version Preview runtime）时，仍允许托管 MCP 自动注入。 |
 | `UPLOAD_DIR` | `$HERMES_WEB_UI_HOME/upload` | 覆盖上传根目录。文件会保存在按 Profile 隔离的子目录下。 |
 | `CORS_ORIGINS` | 仅同 host | HTTP、Socket.IO、WebSocket 跨源 allowlist，支持逗号或空格分隔。只有明确需要旧版 wildcard CORS 时才设置为 `*`。 |
@@ -331,7 +323,7 @@ Web UI 启动后端聊天能力时，会优先使用包含 `run_agent.py` 的源
 | `HERMES_BRIDGE_TOOLSETS` | profile/默认值 | bridge 运行时的 toolset 覆盖。 |
 | `HERMES_BRIDGE_MAX_TURNS` | profile/默认值 | bridge 运行时的最大轮数覆盖。 |
 | `HERMES_BRIDGE_SUPPRESS_PLATFORM_HINT` | `cli` | 控制传给 Hermes Agent 的 bridge platform hint suppression。 |
-| `HERMES_OPENROUTER_APP_REFERER` | `https://hermes-studio.ai` | bridge 运行发送给 OpenRouter 的 attribution referer。 |
+| `HERMES_OPENROUTER_APP_REFERER` | `https://hermes-fleet.ai` | bridge 运行发送给 OpenRouter 的 attribution referer。 |
 | `HERMES_OPENROUTER_APP_TITLE` | `Hermes Web UI` | bridge 运行发送给 OpenRouter 的 attribution title。 |
 | `HERMES_OPENROUTER_APP_CATEGORIES` | `cli-agent,personal-agent` | bridge 运行发送给 OpenRouter 的 attribution categories。 |
 | `HERMES_WEB_UI_MANAGED_GATEWAY` | 默认开启 | 控制 Web UI 托管 Hermes gateway 进程；设为 `0`、`false`、`no` 或 `off` 时改用 `hermes gateway start`。 |
@@ -376,8 +368,8 @@ Web UI 启动后端聊天能力时，会优先使用包含 `run_agent.py` 的源
 ## 开发
 
 ```bash
-git clone https://github.com/EKKOLearnAI/hermes-studio.git
-cd hermes-web-ui
+git clone https://gitee.com/dddpeter/hermes-fleet.git
+cd hermes-fleet
 npm install
 npm run dev
 ```
@@ -414,15 +406,9 @@ BFF 层负责：Socket.IO 聊天流式推送、Hermes agent bridge、按 Profile
 
 **后端：** Koa 2（BFF 服务器）+ node-pty（Web 终端）
 
-## Star 历史
-
-[![Star 历史图表](https://api.star-history.com/svg?repos=EKKOLearnAI/hermes-studio&type=Date)](https://star-history.com/#EKKOLearnAI/hermes-studio&Date)
-
-<!-- 如上方图表未加载，可访问 https://star-history.com/#EKKOLearnAI/hermes-studio -->
-
 ## 许可证
 
 [BSL-1.1](./LICENSE)
 
-该许可证覆盖 Hermes Studio、原 Hermes Web UI 名称、`hermes-web-ui` npm 包和
+该许可证覆盖 Hermes Fleet、原 Hermes Web UI 名称、`hermes-web-ui` npm 包和
 CLI、桌面应用、固件、发布产物、文档以及本仓库内的关联文件。

@@ -1,5 +1,5 @@
 <p align="center">
-  <strong>Hermes Studio</strong>
+  <strong>Hermes Fleet</strong>
   <a href="./README_zh.md">中文</a>
 </p>
 
@@ -10,24 +10,24 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/releases/latest">Download Hermes Studio Desktop</a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet/releases/latest">Download Hermes Fleet Desktop</a>
   ·
   <code>npm install -g hermes-web-ui && hermes-web-ui start</code>
 </p>
 
 <p align="center">
-  <img src="https://github.com/EKKOLearnAI/hermes-studio/blob/main/packages/client/src/assets/image.gif" alt="Hermes Web UI Demo" width="680"/>
+  <img src="https://gitee.com/dddpeter/hermes-fleet/blob/main/packages/client/src/assets/image.gif" alt="Hermes Web UI Demo" width="680"/>
 </p>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/hermes-web-ui"><img src="https://img.shields.io/npm/v/hermes-web-ui?style=flat-square&color=blue" alt="npm version"/></a>
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/hermes-web-ui?style=flat-square" alt="license"/></a>
-  <a href="https://github.com/EKKOLearnAI/hermes-studio/stargazers"><img src="https://img.shields.io/github/stars/EKKOLearnAI/hermes-studio?style=flat-square" alt="stars"/></a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/hermes-web-ui?style=flat-square" alt="license"/></a>
+  <a href="https://gitee.com/dddpeter/hermes-fleet"><img src="https://gitee.com/dddpeter/hermes-fleet/badge/star.svg?theme=dark" alt="stars"/></a>
 </p>
 
 ## Core Capabilities
 
-| Area | What Hermes Studio does |
+| Area | What Hermes Fleet does |
 | --- | --- |
 | Agent chat | Runs Hermes Agent conversations with streaming responses, tool traces, file upload/download, and persistent local sessions. |
 | Local control plane | Manages profiles, providers, models, credentials, memory, skills, plugins, logs, and runtime settings from one dashboard. |
@@ -149,7 +149,7 @@ Unified configuration for **8 platforms** in one page:
 ### Admin & Runtime Management
 
 - Device and LAN peer views for local-network discovery and peer tooling
-- MCP manager for the managed `hermes-studio` MCP server and profile injection
+- MCP manager for the managed `hermes-fleet` MCP server and profile injection
 - Runtime version and version-preview tooling for testing newer builds in isolation
 - Performance monitor views for super administrators
 
@@ -209,10 +209,10 @@ hermes-web-ui reset-default-login
 ### Desktop App & Updates
 
 - Native Electron shell for Windows, macOS, and Linux
-- Bundles the Web UI runtime and starts the local Hermes Studio server automatically
+- Bundles the Web UI runtime and starts the local Hermes Fleet server automatically
 - Uses Cloudflare download endpoints for desktop auto-update metadata and assets first
 - Falls back to GitHub Releases `latest` assets if the Cloudflare update feed is unavailable
-- Windows upgrades attempt to close an existing Hermes Studio process before replacing files
+- Windows upgrades attempt to close an existing Hermes Fleet process before replacing files
 
 ---
 
@@ -220,8 +220,8 @@ hermes-web-ui reset-default-login
 
 ### Desktop App (Recommended)
 
-Download the latest **Hermes Studio** desktop installer from
-[GitHub Releases](https://github.com/EKKOLearnAI/hermes-studio/releases/latest).
+Download the latest **Hermes Fleet** desktop installer from
+[GitHub Releases](https://gitee.com/dddpeter/hermes-fleet/releases/latest).
 
 Desktop builds are published for macOS, Windows, and Linux, with separate
 architecture assets where applicable. The desktop app bundles the Web UI
@@ -238,19 +238,19 @@ desktop app, bundled Hermes Agent CLI, and bundled Web UI CLI do not conflict:
 
 | Command | Description |
 | --- | --- |
-| `hermes-studio` | Open the Hermes Studio desktop app |
-| `hermes-studio cli ...` | Run the bundled Hermes Agent CLI |
-| `hermes-studio web ...` | Run the bundled `hermes-web-ui` command |
-| `hermes-studio -h` | Show wrapper help |
+| `hermes-fleet` | Open the Hermes Fleet desktop app |
+| `hermes-fleet cli ...` | Run the bundled Hermes Agent CLI |
+| `hermes-fleet web ...` | Run the bundled `hermes-web-ui` command |
+| `hermes-fleet -h` | Show wrapper help |
 | `hermes-studio-mcp` | Run the managed Web UI MCP bridge |
 
-Use `hermes-studio cli -h` for Hermes Agent CLI help and
-`hermes-studio web -h` for Web UI CLI help.
+Use `hermes-fleet cli -h` for Hermes Agent CLI help and
+`hermes-fleet web -h` for Web UI CLI help.
 
 Desktop auto-updates read the latest feed from
 `https://download.ekkolearnai.com/latest` first. If that endpoint is
 unavailable, the updater falls back to
-`https://github.com/EKKOLearnAI/hermes-studio/releases/latest/download`.
+`https://gitee.com/dddpeter/hermes-fleet/releases/latest/download`.
 
 ### npm
 
@@ -292,7 +292,7 @@ These variables configure Hermes Web UI, its local Hermes runtime integration, a
 | `BIND_HOST` | `0.0.0.0` | Web UI bind host. Set `::` explicitly for IPv6. |
 | `HERMES_WEB_UI_HOME` | `~/.hermes-web-ui` | Web UI data home for auth token, credentials, logs, DB, and default uploads. `HERMES_WEBUI_STATE_DIR` is also supported as a compatibility alias. |
 | `HERMES_WEBUI_STATE_DIR` | unset | Compatibility alias for `HERMES_WEB_UI_HOME`. |
-| `HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT` | unset | Disable startup injection of the managed `hermes-studio` MCP server into Hermes profile configs. |
+| `HERMES_WEB_UI_DISABLE_MCP_AUTOINJECT` | unset | Disable startup injection of the managed `hermes-fleet` MCP server into Hermes profile configs. |
 | `HERMES_WEB_UI_ALLOW_TRANSIENT_MCP_AUTOINJECT` | unset | Allow managed MCP injection when `HERMES_WEB_UI_HOME` is under a temporary directory, such as Version Preview runtimes. |
 | `UPLOAD_DIR` | `$HERMES_WEB_UI_HOME/upload` | Upload root override. Files are stored below profile-scoped subdirectories. |
 | `CORS_ORIGINS` | same host only | Comma- or space-separated cross-origin allowlist for HTTP, Socket.IO, and WebSocket requests. Set `*` only when you intentionally need legacy wildcard CORS. |
@@ -326,7 +326,7 @@ These variables configure Hermes Web UI, its local Hermes runtime integration, a
 | `HERMES_BRIDGE_TOOLSETS` | profile/default | Toolset override for bridge runs. |
 | `HERMES_BRIDGE_MAX_TURNS` | profile/default | Maximum turn override for bridge runs. |
 | `HERMES_BRIDGE_SUPPRESS_PLATFORM_HINT` | `cli` | Controls bridge platform hint suppression passed to Hermes Agent. |
-| `HERMES_OPENROUTER_APP_REFERER` | `https://hermes-studio.ai` | OpenRouter attribution referer sent by bridge runs. |
+| `HERMES_OPENROUTER_APP_REFERER` | `https://hermes-fleet.ai` | OpenRouter attribution referer sent by bridge runs. |
 | `HERMES_OPENROUTER_APP_TITLE` | `Hermes Web UI` | OpenRouter attribution title sent by bridge runs. |
 | `HERMES_OPENROUTER_APP_CATEGORIES` | `cli-agent,personal-agent` | OpenRouter attribution categories sent by bridge runs. |
 | `HERMES_WEB_UI_MANAGED_GATEWAY` | enabled | Controls Web UI-managed Hermes gateway process handling. Set `0`, `false`, `no`, or `off` to use `hermes gateway start` instead. |
@@ -373,8 +373,8 @@ On startup the BFF server automatically:
 ## Development
 
 ```bash
-git clone https://github.com/EKKOLearnAI/hermes-studio.git
-cd hermes-web-ui
+git clone https://gitee.com/dddpeter/hermes-fleet.git
+cd hermes-fleet
 npm install
 npm run dev
 ```
@@ -411,16 +411,10 @@ The BFF layer handles Socket.IO chat streaming, the Hermes agent bridge, profile
 
 **Backend:** Koa 2 (BFF server) + node-pty (web terminal)
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=EKKOLearnAI/hermes-studio&type=Date)](https://star-history.com/#EKKOLearnAI/hermes-studio&Date)
-
-<!-- If the chart above doesn't load, visit https://star-history.com/#EKKOLearnAI/hermes-studio -->
-
 ## License
 
 [BSL-1.1](./LICENSE)
 
-The license covers Hermes Studio, the former Hermes Web UI name, the
+The license covers Hermes Fleet, the former Hermes Web UI name, the
 `hermes-web-ui` npm package and CLI, desktop applications, firmware, release
 artifacts, documentation, and associated files in this repository.

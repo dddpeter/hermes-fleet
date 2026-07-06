@@ -7,8 +7,8 @@ untouched.
 
 ```bash
 git fetch origin --prune
-git worktree add -b codex/<short-topic> ../worktrees/hermes-web-ui-<short-topic> origin/main
-cd ../worktrees/hermes-web-ui-<short-topic>
+git worktree add -b codex/<short-topic> ../worktrees/hermes-fleet-<short-topic> origin/main
+cd ../worktrees/hermes-fleet-<short-topic>
 ```
 
 If the repository uses a fork remote, push to the remote requested by the task.

@@ -1,7 +1,7 @@
 export default {
   // 登录
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: '输入用户名和密码以继续。',
     placeholder: '访问令牌',
     submit: '登录',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: '远程版本加载失败',
     downloadTasks: '下载任务',
     downloadStarted: '已开始下载',
-    activateSuccess: '版本选择已保存，重启 Hermes Studio 后生效。',
+    activateSuccess: '版本选择已保存，重启 Hermes Fleet 后生效。',
     jobStatus: {
       queued: '排队中',
       running: '下载中',
@@ -2371,7 +2371,7 @@ export default {
     new_0_6_26_3: 'Coding Agent 会话现在更清楚地展示 reasoning 与 context 设置，持久化 API mode，避免 Codex 误用 app-server API mode，并修复继续对话后上下文用量跳变',
     new_0_6_26_4: 'Journey 新增学习图谱视图并打磨图谱交互，群聊新功能线也补上基线测试覆盖',
     new_0_6_26_5: '桌面端可靠性继续提升：修复登录持久化和重置流程、Windows worker 动态端口兜底、stdout/stderr EPIPE 处理，并隔离 ESP32-C3 v1 固件打包',
-    new_0_6_26_6: 'Hermes Studio MCP 的 available-models 默认改为紧凑摘要，支持过滤和显式完整详情参数，避免把大量模型数据塞进 agent 上下文',
+    new_0_6_26_6: 'Hermes Fleet MCP 的 available-models 默认改为紧凑摘要，支持过滤和显式完整详情参数，避免把大量模型数据塞进 agent 上下文',
     new_0_6_25_1: '修复 Hermes Agent 0.18.0 下 execute_code 因 Agent Bridge 审批记忆 wrapper 未转发新的 has_host_access 参数而失败的问题',
     new_0_6_24_1: '本版本汇总 0.6.23 之后合并的 PR，重点改进聊天输入区、工作区可见性、插件管理、默认模型和工作区 diff 查看体验',
     new_0_6_24_2: '单聊和群聊输入区更新为整合式工具栏，模型选择更紧凑，输入设置集中管理，上下文用量更清晰，移动端样式更稳，并恢复单聊输入框手动拖拽高度',

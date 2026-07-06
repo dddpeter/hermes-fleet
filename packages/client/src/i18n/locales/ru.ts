@@ -1,7 +1,7 @@
 export default {
 
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'Введите имя пользователя и пароль для продолжения.',
     placeholder: 'Токен доступа',
     submit: 'Войти',
@@ -187,7 +187,7 @@ export default {
     remoteLoadFailed: 'Не удалось загрузить удаленные версии',
     downloadTasks: 'Задачи загрузки',
     downloadStarted: 'Загрузка начата',
-    activateSuccess: 'Выбор версии сохранен. Перезапустите Hermes Studio, чтобы применить его.',
+    activateSuccess: 'Выбор версии сохранен. Перезапустите Hermes Fleet, чтобы применить его.',
     jobStatus: {
       queued: 'В очереди',
       running: 'Выполняется',
@@ -2117,7 +2117,7 @@ export default {
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Исправлен сбой execute_code с Hermes Agent 0.18.0: Agent Bridge теперь передает новый параметр has_host_access через wrapper памяти подтверждений',
     new_0_6_24_1: 'Этот релиз включает PR после 0.6.23 и улучшает ввод чата, видимость workspace, управление plugins, модели по умолчанию и просмотр workspace diff',
     new_0_6_24_2: 'Поля ввода одиночного и группового чата получили встроенную панель, компактные элементы модели, сгруппированные настройки ввода, более понятное использование context, мобильную полировку и восстановленный ручной resize одиночного чата',

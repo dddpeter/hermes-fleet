@@ -1,7 +1,7 @@
 export default {
   // Login
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'Introduce tu nombre de usuario y contrasena para continuar.',
     placeholder: 'Token de acceso',
     submit: 'Iniciar sesion',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: 'No se pudieron cargar las versiones remotas',
     downloadTasks: 'Tareas de descarga',
     downloadStarted: 'Descarga iniciada',
-    activateSuccess: 'Selección de versión guardada. Reinicia Hermes Studio para usarla.',
+    activateSuccess: 'Selección de versión guardada. Reinicia Hermes Fleet para usarla.',
     jobStatus: {
       queued: 'En cola',
       running: 'En ejecución',
@@ -1983,7 +1983,7 @@ jobTriggered: 'Job ejecutado',
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Corrige fallos de execute_code con Hermes Agent 0.18.0 al reenviar el nuevo parametro has_host_access desde el wrapper de memoria de aprobaciones de Agent Bridge',
     new_0_6_24_1: 'Esta version cubre los PR fusionados despues de 0.6.23 y mejora la entrada de chat, la visibilidad de workspaces, la gestion de plugins, los modelos predeterminados y la revision de diffs',
     new_0_6_24_2: 'Las entradas de chat individual y grupal usan una barra integrada, controles de modelo compactos, ajustes agrupados, uso de contexto mas claro, mejor vista movil y restaura el redimensionado manual del chat individual',

@@ -28,7 +28,6 @@ npm run build
 | Auth, profile, or credential behavior | focused server tests plus relevant e2e auth tests |
 | Chat, Socket.IO, group chat | focused server tests plus relevant e2e chat tests |
 | Chat session chain, Agent Bridge, compression, or Group Chat | Add one `docs/chat-chain-changes/*.md` fragment with date, PR/commit, touched feature, and behavior impact; then run `npm run harness:check` plus focused chat/bridge/group-chat tests |
-| Desktop packaging | `npm run harness:check`, `npm run build`, and a platform-specific desktop build when practical |
 | GitHub workflow | `npm run harness:check` and `actionlint` when available |
 | Package manifests | `npm ci --ignore-scripts` and lockfile workflow expectations |
 
@@ -38,8 +37,7 @@ npm run build
   assets on pushes and pull requests.
 - Playwright workflow: runs browser e2e tests.
 - NPM lockfile workflow: verifies `package-lock.json` is synchronized.
-- Desktop release and manual desktop build workflows build and upload
-  platform-specific desktop artifacts.
+- Web UI release workflow: packages release artifacts on published releases.
 
 ## Release Workflow Guardrail
 
@@ -47,23 +45,9 @@ Published GitHub Releases should still trigger Web UI artifact packaging, and
 the Web UI release workflow must keep the published GitHub Release out of
 latest.
 
-Full desktop packaging is manually dispatched through
-`.github/workflows/desktop-release.yml`; published GitHub Releases must not
-automatically start desktop packaging. After a full desktop release finishes,
-the workflow must mark the target GitHub Release as latest.
-
-Desktop release jobs must upload only the artifacts that their matrix target can
-produce. Keep artifact globs in matrix data and keep `fail_on_unmatched_files:
-true` so missing expected files still fail.
-
-Expected desktop release outputs:
-
-| Target | Required release globs |
-| --- | --- |
-| macOS | `*.dmg`, `*.dmg.blockmap`, `*.zip`, `*.zip.blockmap`, `latest*.yml` |
-| Windows | `*.exe`, `*.exe.blockmap`, `latest*.yml` |
-| Linux x64 | `*.AppImage`, `*.deb`, `latest*.yml` |
-| Linux arm64 | `*.AppImage`, `latest*.yml` |
+The Electron desktop distribution under `packages/desktop` is retained for
+reference but no longer has CI packaging workflows; desktop builds, if needed,
+are produced locally via the `packages/desktop` scripts.
 
 ## Failure Handling
 

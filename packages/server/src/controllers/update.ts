@@ -108,6 +108,7 @@ function normalizeGithubRepoUrl(raw: string): string {
     .trim()
     .replace(/^git\+/, '')
     .replace(/^git@github\.com:/, 'https://github.com/')
+    .replace(/^git@gitee\.com:/, 'https://gitee.com/')
     .replace(/\.git$/, '')
 }
 
@@ -125,9 +126,13 @@ function getPreviewRepoGitUrl(): string {
 
 function getPreviewRepoApiUrl(): string {
   const baseUrl = getPreviewRepoBaseUrl()
-  const match = baseUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/)
-  if (!match) throw new Error(`Preview zip fallback only supports GitHub repositories: ${baseUrl}`)
-  return `https://api.github.com/repos/${match[1]}/${match[2]}`
+  // GitHub: api.github.com/repos/{owner}/{repo}
+  const gh = baseUrl.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/)
+  if (gh) return `https://api.github.com/repos/${gh[1]}/${gh[2]}`
+  // Gitee: gitee.com/api/v5/repos/{owner}/{repo}
+  const gitee = baseUrl.match(/^https:\/\/gitee\.com\/([^/]+)\/([^/]+)$/)
+  if (gitee) return `https://gitee.com/api/v5/repos/${gitee[1]}/${gitee[2]}`
+  throw new Error(`Preview tag fallback only supports GitHub/Gitee repositories: ${baseUrl}`)
 }
 
 function getPreviewGithubRepoParts(): { owner: string; repo: string } {

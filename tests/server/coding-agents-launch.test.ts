@@ -253,7 +253,7 @@ describe('coding agent launch preparation', () => {
     expect(prompt).toContain('当你的回复中包含图片、视频或文件引用时')
   })
 
-  it('uses the desktop runtime node for scoped Hermes Studio MCP configs when available', async () => {
+  it('uses the desktop runtime node for scoped Hermes Fleet MCP configs when available', async () => {
     const home = makeHome()
     process.env.HERMES_AGENT_NODE = '/runtime/node'
 
@@ -440,7 +440,7 @@ describe('coding agent launch preparation', () => {
     expect(config).toContain(`model_catalog_json = "${join(result.rootDir, 'codex-model-catalog.json')}"`)
     expect(config).toContain('model_reasoning_summary = "auto"')
     expect(config).toContain('developer_instructions = """')
-    expect(config).toContain('Hermes Studio MCP usage')
+    expect(config).toContain('Hermes Fleet MCP usage')
     expect(config).toContain('# 输出格式规范')
     expect(config).toContain('[mcp_servers.hermes-studio-api]')
     expect(config).toContain('[mcp_servers.hermes-studio-devices]')

@@ -4,7 +4,7 @@
   "description": "Self-hosted AI chat dashboard for Hermes Agent — multi-model web UI with multi-platform integration",
   "repository": {
     "type": "git",
-    "url": "https://github.com/EKKOLearnAI/hermes-studio.git"
+    "url": "https://gitee.com/dddpeter/hermes-fleet.git"
   },
   "homepage": "https://hermes-studio.ai",
   "license": "BSL-1.1",
@@ -53,14 +53,6 @@
     "preview:website": "vite preview --config vite.config.website.ts",
     "mcu:v1:flash:clean": "pio run -d packages/esp32-c3/v1 && pio run -d packages/esp32-c3/v1 -t erase && pio run -d packages/esp32-c3/v1 -t upload",
     "mcu:flash:clean": "npm run mcu:v1:flash:clean",
-    "desktop:install": "npm ci --prefix packages/desktop --no-audit --no-fund",
-    "desktop:prepare-runtime": "npm --prefix packages/desktop run prepare:runtime",
-    "desktop:prepare-python": "npm --prefix packages/desktop run prepare:python",
-    "desktop:dev": "HERMES_WEB_UI_DIR=\"$PWD\" npm --prefix packages/desktop run dev",
-    "build:desktop": "npm run build && npm run desktop:install && npm --prefix packages/desktop run dist -- --publish never",
-    "build:desktop:mac": "npm run build && npm run desktop:install && npm --prefix packages/desktop run dist -- --mac --publish never",
-    "build:desktop:win": "npm run build && npm run desktop:install && npm --prefix packages/desktop run dist -- --win --publish never",
-    "build:desktop:linux": "npm run build && npm run desktop:install && npm --prefix packages/desktop run dist -- --linux --publish never",
     "openapi:generate": "node scripts/generate-openapi.mjs",
     "claude": "claude --dangerously-skip-permissions"
   },

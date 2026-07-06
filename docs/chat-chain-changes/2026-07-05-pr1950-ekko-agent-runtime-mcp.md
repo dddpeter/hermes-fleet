@@ -7,7 +7,7 @@ impact: Ekko-agent chat runs now use the shared in-memory runtime, carry full re
 
 Ekko-agent runs now go through a global server-side agent runtime while keeping
 session state isolated by session id. The run-chat path resolves the current
-profile's managed Hermes Studio MCP servers and passes them into Ekko tool
+profile's managed Hermes Fleet MCP servers and passes them into Ekko tool
 context, and the Ekko runtime discovers those MCP tools before each model
 request.
 

@@ -12,9 +12,9 @@ describe('desktop updater helpers', () => {
     expect(pendingUpdateDirectories({
       appDataPath: 'C:\\Users\\A\\AppData\\Roaming',
       localAppData: 'C:\\Users\\A\\AppData\\Local',
-      appName: 'Hermes Studio',
+      appName: 'Hermes Fleet',
     })).toEqual(expect.arrayContaining([
-      'C:\\Users\\A\\AppData\\Local/Hermes Studio-updater/pending',
+      'C:\\Users\\A\\AppData\\Local/Hermes Fleet-updater/pending',
       'C:\\Users\\A\\AppData\\Local/hermes-studio-updater/pending',
       'C:\\Users\\A\\AppData\\Roaming/hermes-studio-updater/pending',
     ]))

@@ -10,7 +10,7 @@ import { getHermesWebUiVersion } from './system-info'
 const ACTIVE_VERSION_FILE = 'active-version.json'
 const DEFAULT_REMOTE_MANIFEST_URL = 'https://hermes-studio.ai/versions.json'
 const DEFAULT_DOWNLOAD_BASE_URL = 'https://download.ekkolearnai.com'
-const DEFAULT_GITHUB_REPO = 'EKKOLearnAI/hermes-studio'
+const DEFAULT_GITHUB_REPO = 'dddpeter/hermes-fleet'
 
 export interface ActiveVersionManifest {
   schema: number

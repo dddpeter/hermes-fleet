@@ -1,5 +1,5 @@
 {
-  "name": "Hermes Studio",
+  "name": "Hermes Fleet",
   "short_name": "Hermes",
   "description": "Self-hosted AI chat dashboard for Hermes Agent",
   "start_url": "/#/hermes/chat",

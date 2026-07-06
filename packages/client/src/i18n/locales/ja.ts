@@ -1,7 +1,7 @@
 export default {
   // ログイン
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'ユーザー名とパスワードを入力して続行してください。',
     placeholder: 'アクセストークン',
     submit: 'ログイン',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: 'リモートバージョンの読み込みに失敗しました',
     downloadTasks: 'ダウンロードタスク',
     downloadStarted: 'ダウンロードを開始しました',
-    activateSuccess: 'バージョン選択を保存しました。Hermes Studio を再起動すると反映されます。',
+    activateSuccess: 'バージョン選択を保存しました。Hermes Fleet を再起動すると反映されます。',
     jobStatus: {
       queued: '待機中',
       running: '実行中',
@@ -1982,7 +1982,7 @@ export default {
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Hermes Agent 0.18.0 で Agent Bridge の approval memory wrapper が新しい has_host_access パラメータを転送せず execute_code が失敗する問題を修正しました',
     new_0_6_24_1: 'このリリースは 0.6.23 以降にマージされた PR を反映し、チャット入力、workspace 表示、plugin 管理、default model、workspace diff 確認を改善しました',
     new_0_6_24_2: '単独チャットとグループチャットの入力欄は統合ツールバー、コンパクトな model 操作、まとまった入力設定、見やすい context 使用量、mobile chrome、単独チャットの手動リサイズ復旧に対応しました',

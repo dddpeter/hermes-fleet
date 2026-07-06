@@ -1,7 +1,7 @@
 export default {
   // Login
   login: {
-    title: 'Hermes Studio',
+    title: 'Hermes Fleet',
     description: 'Entrez votre nom d\'utilisateur et votre mot de passe pour continuer.',
     placeholder: 'Jeton d\'acces',
     submit: 'Connexion',
@@ -265,7 +265,7 @@ export default {
     remoteLoadFailed: 'Impossible de charger les versions distantes',
     downloadTasks: 'Tâches de téléchargement',
     downloadStarted: 'Téléchargement démarré',
-    activateSuccess: 'Sélection de version enregistrée. Redémarrez Hermes Studio pour l’utiliser.',
+    activateSuccess: 'Sélection de version enregistrée. Redémarrez Hermes Fleet pour l’utiliser.',
     jobStatus: {
       queued: 'En attente',
       running: 'En cours',
@@ -1983,7 +1983,7 @@ jobTriggered: 'Job declenche',
     new_0_6_26_3: 'Coding Agent sessions now show reasoning and context settings more clearly, persist API mode, avoid Codex app-server mode misuse, and keep context usage from jumping after follow-up turns',
     new_0_6_26_4: 'Journey gained a learning graph view with polished graph interactions, while group chat added baseline coverage for the new feature line',
     new_0_6_26_5: 'Desktop reliability improved with login persistence/reset fixes, Windows worker dynamic port fallback, stdout/stderr EPIPE handling, and isolated ESP32-C3 v1 firmware packaging',
-    new_0_6_26_6: 'Hermes Studio MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
+    new_0_6_26_6: 'Hermes Fleet MCP now returns a compact available-models summary by default, with filters and an explicit full-detail option to avoid flooding agent context',
     new_0_6_25_1: 'Correction des echecs execute_code avec Hermes Agent 0.18.0 en transmettant le nouveau parametre has_host_access via le wrapper de memoire d approbation Agent Bridge',
     new_0_6_24_1: 'Cette version couvre les PR fusionnees apres 0.6.23 avec des ameliorations pour la saisie chat, la visibilite des workspaces, les plugins, les modeles par defaut et la revue des diffs',
     new_0_6_24_2: 'Les champs de saisie chat et groupe utilisent une barre integree, des controles de modele compacts, des reglages regroupes, un usage du contexte plus lisible, un mobile chrome plus stable et le redimensionnement manuel du chat simple est retabli',
