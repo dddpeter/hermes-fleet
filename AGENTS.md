@@ -30,7 +30,7 @@ Use the smallest relevant check while iterating. Before a broad PR, run
 
 - `packages/client/src` - Vue 3 client, stores, routes, i18n, API helpers.
 - `packages/server/src` - Koa API, Socket.IO, persistence, Hermes integration.
-- `packages/desktop` - Electron wrapper, bundled Python/Hermes runtime, release artifacts.
+- ~~`packages/desktop`~~ - Removed (backed up to `feature/desktop-backup` branch).
 - `tests/client`, `tests/server`, `tests/shared` - Vitest coverage.
 - `tests/e2e` - Playwright browser coverage with mocked backend services.
 - `.github/workflows` - CI and release automation.
