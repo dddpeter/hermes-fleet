@@ -171,21 +171,24 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    subgraph WebUI["hermes-web-ui"]
+    subgraph WebUI
+        direction TB
         AutoStart["Gateway Auto-start"]
-        Runner["Gateway Runner<br/>per-profile state"]
+        Runner["Gateway Runner\nper-profile state"]
     end
 
-    subgraph Profiles["~/.hermes/"]
-        Root["~/.hermes/<br/>config.yaml + .env<br/>(default profile)"]
-        P1["profiles/<name-a>/<br/>config.yaml + .env"]
-        P2["profiles/<name-b>/<br/>config.yaml + .env"]
+    subgraph Profiles
+        direction TB
+        Root["Root Profile\nconfig.yaml + .env\ndefault :8642"]
+        P1["Profile A\nprofiles/name-a/\nconfig.yaml + .env :8645"]
+        P2["Profile B\nprofiles/name-b/\nconfig.yaml + .env :8646"]
     end
 
-    subgraph Gateways["Gateway Processes"]
-        GW0["gateway run<br/>profile=default<br/>:8642"]
-        GW1["gateway run<br/>profile=name-a<br/>:8645"]
-        GW2["gateway run<br/>profile=name-b<br/>:8646"]
+    subgraph Gateways
+        direction TB
+        GW0["gateway run\ndefault\n:8642"]
+        GW1["gateway run\nname-a\n:8645"]
+        GW2["gateway run\nname-b\n:8646"]
     end
 
     AutoStart -->|"scan profiles"| Profiles
