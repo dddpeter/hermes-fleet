@@ -1387,7 +1387,10 @@ export const useChatStore = defineStore('chat', () => {
         }, activeSession.value?.profile, runtimeTransport())
       })
       if (activeSessionId.value === sessionId) {
-        await loadWorkspaceRunChangesForSession(sessionId)
+        const target = sessions.value.find(s => s.id === sessionId)
+        if (target && target.messages.length > 0) {
+          await loadWorkspaceRunChangesForSession(sessionId)
+        }
       }
     } catch (err) {
       console.error('Failed to load session messages via resume:', err)
