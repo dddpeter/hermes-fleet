@@ -5,9 +5,9 @@ import bodyParser from '@koa/bodyparser'
 import serve from 'koa-static'
 import send from 'koa-send'
 import os from 'os'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 import { mkdir } from 'fs/promises'
-import { readFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { config, shouldCreateWebUiDataDir } from './config'
 import { initLoginLimiter } from './services/login-limiter'
 import { bindShutdown } from './services/shutdown'
@@ -23,6 +23,8 @@ import { getAgentBridgeManager, startAgentBridgeManager } from './services/herme
 import { HermesSkillInjector } from './services/hermes/skill-injector'
 import { injectBundledMcpServer } from './services/hermes/studio-mcp-autoinject'
 import { ensureProfileGatewaysRunning } from './services/hermes/gateway-autostart'
+import { detectHermesRootHome } from './services/hermes/hermes-path'
+import { listProfileNamesFromDisk } from './services/hermes/hermes-profile'
 import { refreshConfiguredProviderModelCatalogsInBackground } from './services/hermes/model-catalog-cache'
 import { scanLanDevices, startLanDiscoveryResponder } from './services/lan-discovery'
 import { getLanPeerSocketManager, getLanPeerSocketPath } from './services/lan-peer-socket'
@@ -174,6 +176,21 @@ function skillInjectionDisabled(): boolean {
 }
 
 async function startRuntimeServicesBeforeListen(): Promise<void> {
+  // Ensure active_profile file exists so the system has a default profile to work with.
+  try {
+    const hermesRoot = detectHermesRootHome()
+    const activeProfilePath = join(hermesRoot, 'active_profile')
+    if (!existsSync(activeProfilePath)) {
+      mkdirSync(hermesRoot, { recursive: true })
+      const profiles = listProfileNamesFromDisk()
+      const defaultProfile = profiles.includes('default') ? 'default' : profiles[0] || 'default'
+      writeFileSync(activeProfilePath, `${defaultProfile}\n`, 'utf-8')
+      console.log(`[bootstrap] created active_profile with "${defaultProfile}"`)
+    }
+  } catch (err) {
+    logger.warn(err, '[bootstrap] failed to ensure active_profile exists')
+  }
+
   if (gatewayAutostartDisabled()) {
     console.log('[bootstrap] profile gateway check disabled by HERMES_WEB_UI_DISABLE_GATEWAY_AUTOSTART')
   } else {

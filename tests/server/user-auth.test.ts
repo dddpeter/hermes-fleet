@@ -282,11 +282,11 @@ describe('user auth tables and middleware', () => {
     users.replaceUserProfiles(1, ['default', 'work'], 'default')
 
     const ctx = {
-      path: '/api/hermes/available-models',
+      path: '/api/hermes/chat',
       state: { user: { id: 1, username: 'ops', role: 'admin', profiles: ['default', 'work'] } },
       query: {},
       request: { body: {} },
-      get: vi.fn((name: string) => name.toLowerCase() === 'x-hermes-profile' ? 'private' : ''),
+      get: vi.fn(() => ''),
       status: 200,
       body: null,
     } as any
