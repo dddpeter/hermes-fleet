@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="https://gitee.com/dddpeter/hermes-fleet/blob/main/packages/client/src/assets/image.gif" alt="Hermes Web UI Demo" width="680"/>
+  <img src="https://gitee.com/dddpeter/hermes-fleet/raw/main/packages/client/src/assets/image.gif" alt="Hermes Web UI Demo" width="680"/>
 </p>
 
 <p align="center">
