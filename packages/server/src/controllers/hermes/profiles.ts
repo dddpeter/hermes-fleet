@@ -584,6 +584,8 @@ export async function create(ctx: any) {
     await ensureProfilePlatformPorts(name)
 
     // Inject default env template for quick platform onboarding (WeChat, Feishu, etc.)
+    // Must run AFTER smartCloneCleanup which strips /^WEIXIN_/ keys — the policy
+    // defaults (WEIXIN_DM_POLICY etc.) are non-credentials and should be re-injected.
     await injectDefaultEnvForNewProfile(name)
 
     await injectBundledSkillsForProfile(name)
