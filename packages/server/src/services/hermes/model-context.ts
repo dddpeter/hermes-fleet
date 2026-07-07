@@ -105,7 +105,10 @@ function loadModelsDevCache(): Record<string, ProviderEntry> | null {
 function getProfileDir(profile?: string): string {
   if (!profile || profile === 'default') return HERMES_BASE
   const dir = join(HERMES_BASE, 'profiles', profile)
-  return existsSync(dir) ? dir : HERMES_BASE
+  if (!existsSync(dir)) {
+    throw Object.assign(new Error(`Profile directory not found: ${profile}`), { code: 'profile_not_found' })
+  }
+  return dir
 }
 
 function getDefaultModel(config: any): string | null {

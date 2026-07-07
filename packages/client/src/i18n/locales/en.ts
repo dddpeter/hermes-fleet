@@ -2377,5 +2377,13 @@ export default {
     new_0_6_24_4: 'The workspace folder picker can browse Windows drive and junction workflows more reliably and now shows dot-prefixed folders such as .hermes, .config, and .codex while keeping WORKSPACE_BASE safety checks',
     new_0_6_24_5: 'Plugins can be enabled or disabled from Studio when they are manageable user plugins, and the Plugins page now reflects base and profile plugin state more accurately',
     new_0_6_24_6: 'Models now support default provider and default model actions; bridge terminal error detection is less noisy, Hermes Agent runtime packaging moves to 0.18.0, and the website version manifest was refreshed',
+    new_0_7_0_1: 'Rebrand: Hermes Web UI is now Hermes Fleet, repository migrated to Gitee, with updated logo and icons',
+    new_0_7_0_2: 'Security: fixed multi-profile file isolation vulnerability — missing profile directories no longer silently fall back to root',
+    new_0_7_0_3: 'Ekko Agent integrated into chat with runtime context, browser tools, stable tool events, and context usage tracking',
+    new_0_7_0_4: 'Journey learning graph view added with interactive graph exploration',
+    new_0_7_0_5: 'Workspace run changes now appear as chat diff cards, with filesystem workspace support',
+    new_0_7_0_6: 'Coding Agent sessions show reasoning and context settings more clearly, persist API mode, and fix context usage jumps',
+    new_0_7_0_7: 'MCP available-models returns a compact summary by default to avoid flooding agent context',
+    new_0_7_0_8: 'Removed desktop download entry, Docker Compose configuration, and settings circuit badge component',
   },
 }

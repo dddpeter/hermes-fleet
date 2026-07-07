@@ -1,8 +1,10 @@
 import type { Context, Next } from 'koa'
 import { createHmac, timingSafeEqual } from 'crypto'
 import { getToken } from '../services/auth'
+import { logger } from '../services/logger'
 import {
   findUserById,
+  getDefaultProfileForUser,
   listUserProfiles,
   touchUserLogin,
   userCanAccessProfile,
@@ -274,6 +276,19 @@ export async function resolveUserProfile(ctx: Context, next: Next): Promise<void
 
   const profileName = resolveRequestedProfile(ctx)
   if (!profileName) {
+    // Non-admin users without an explicit profile header must not fall through
+    // to the global active_profile — resolve to the caller's own default instead.
+    if (user.role !== 'super_admin') {
+      const profiles = user.profiles || []
+      if (profiles.length === 0) {
+        logger.warn('[auth] user %s (%s) has no profiles assigned, rejecting request to %s', user.id, user.username, ctx.path)
+        ctx.status = 403
+        ctx.body = { error: 'No profiles assigned to this user' }
+        return
+      }
+      const defaultProfile = getDefaultProfileForUser(user.id)
+      ctx.state.profile = { name: profiles.includes(defaultProfile) ? defaultProfile : profiles[0] }
+    }
     await next()
     return
   }

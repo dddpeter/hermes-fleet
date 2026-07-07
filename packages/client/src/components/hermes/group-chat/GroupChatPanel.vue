@@ -10,7 +10,6 @@ import GroupMessageList from './GroupMessageList.vue'
 import GroupChatInput from './GroupChatInput.vue'
 import ProfileAvatar from '@/components/hermes/profiles/ProfileAvatar.vue'
 import PageSidebarNav from '@/components/layout/PageSidebarNav.vue'
-import SettingsCircuitBadge from '@/components/layout/SettingsCircuitBadge.vue'
 import { copyToClipboard } from '@/utils/clipboard'
 import type { Attachment } from '@/stores/hermes/chat'
 import type { RoomAgent } from '@/api/hermes/group-chat'
@@ -443,7 +442,6 @@ async function handleApproval(choice: 'once' | 'session' | 'always' | 'deny') {
                     </svg>
                     <span>{{ t('sidebar.settings') }}</span>
                 </button>
-                <SettingsCircuitBadge />
             </div>
         </div>
 

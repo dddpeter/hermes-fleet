@@ -1,6 +1,7 @@
 import { createReadStream, existsSync, readFileSync, readdirSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { basename, join } from 'path'
+import { randomBytes } from 'crypto'
 import { tmpdir } from 'os'
 import { getWebUiHome } from '../../config'
 import * as hermesCli from '../../services/hermes/hermes-cli'
@@ -483,6 +484,49 @@ async function ensureProfilePlatformPorts(name: string): Promise<void> {
   }
 }
 
+/**
+ * 为新建 profile 的 .env 注入平台接入默认值。
+ * 仅在 key 不存在时写入，避免覆盖 clone 源的配置或用户手动修改。
+ */
+async function injectDefaultEnvForNewProfile(name: string): Promise<void> {
+  if (!name || name === 'default') return
+  try {
+    const envPath = join(getProfileDir(name), '.env')
+    const raw = existsSync(envPath) ? readFileSync(envPath, 'utf-8') : ''
+    const existingKeys = new Set<string>()
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx !== -1) existingKeys.add(trimmed.slice(0, eqIdx).trim())
+    }
+
+    const defaults: Record<string, string> = {
+      WEIXIN_DM_POLICY: 'open',
+      WEIXIN_ALLOW_ALL_USERS: 'true',
+      WEIXIN_GROUP_POLICY: 'open',
+      FEISHU_GROUP_POLICY: 'open',
+      FEISHU_REQUIRE_MENTION: 'true',
+    }
+    // 仅当 key 不存在时才写入固定默认值
+    for (const [key, value] of Object.entries(defaults)) {
+      if (!existingKeys.has(key)) {
+        await saveEnvValueForProfile(name, key, value)
+      }
+    }
+
+    // API_SERVER_KEY 始终自动生成（除非已存在）
+    if (!existingKeys.has('API_SERVER_KEY')) {
+      const apiKey = randomBytes(24).toString('hex')
+      await saveEnvValueForProfile(name, 'API_SERVER_KEY', apiKey)
+    }
+
+    logger.info('[profiles] injected default env template for "%s"', name)
+  } catch (err: any) {
+    logger.warn(err, '[profiles] failed to inject default env for "%s"', name)
+  }
+}
+
 export async function create(ctx: any) {
   const { name, clone } = ctx.request.body as { name?: string; clone?: boolean }
   if (!name) {
@@ -538,6 +582,11 @@ export async function create(ctx: any) {
     // multiple native gateways can bind their own platform ports. Runs after
     // clone cleanup (no overlap) and before skills injection. Idempotent + soft.
     await ensureProfilePlatformPorts(name)
+
+    // Inject default env template for quick platform onboarding (WeChat, Feishu, etc.)
+    // Must run AFTER smartCloneCleanup which strips /^WEIXIN_/ keys — the policy
+    // defaults (WEIXIN_DM_POLICY etc.) are non-credentials and should be re-injected.
+    await injectDefaultEnvForNewProfile(name)
 
     await injectBundledSkillsForProfile(name)
 
@@ -764,6 +813,18 @@ export async function remove(ctx: any) {
     const ok = await hermesCli.deleteProfile(name)
     if (ok && !profileDirectoryExists(name)) {
       removeProfileMetadata(name)
+
+      // Clean up orphaned coding-agent model/workspace directories for this profile.
+      const caBase = join(getWebUiHome(), 'coding-agent')
+      for (const subdir of ['model', 'workspace']) {
+        const dir = join(caBase, subdir, name)
+        try {
+          if (existsSync(dir)) rmSync(dir, { recursive: true })
+        } catch (err) {
+          logger.warn(err, '[profiles] failed to clean coding-agent/%s for deleted profile "%s"', subdir, name)
+        }
+      }
+
       ctx.body = { success: true }
     } else if (ok) {
       ctx.status = 500
@@ -794,10 +855,34 @@ export async function rename(ctx: any) {
     ctx.body = { error: `Profile name '${new_name}' is reserved and cannot be used` }
     return
   }
+  const oldName = ctx.params.name
   try {
-    const ok = await hermesCli.renameProfile(ctx.params.name, new_name)
+    // Clean up bridge sessions for the old profile name before renaming.
+    try {
+      const result = await bridgeCleanupClient().destroyProfile(oldName)
+      logger.info('[profiles] destroyed bridge sessions for renamed profile "%s" destroyed=%s', oldName, result.destroyed)
+    } catch (err) {
+      logger.warn(err, '[profiles] failed to destroy bridge sessions for renamed profile "%s"', oldName)
+    }
+
+    const ok = await hermesCli.renameProfile(oldName, new_name)
     if (ok) {
-      renameProfileMetadata(ctx.params.name, new_name)
+      renameProfileMetadata(oldName, new_name)
+
+      // Migrate coding-agent model/workspace directories so they track the new name.
+      const caBase = join(getWebUiHome(), 'coding-agent')
+      for (const subdir of ['model', 'workspace']) {
+        const src = join(caBase, subdir, oldName)
+        const dest = join(caBase, subdir, new_name)
+        try {
+          if (existsSync(src)) {
+            renameSync(src, dest)
+          }
+        } catch (err) {
+          logger.warn(err, '[profiles] failed to migrate coding-agent/%s for profile rename %s → %s', subdir, oldName, new_name)
+        }
+      }
+
       ctx.body = { success: true }
     } else {
       ctx.status = 500

@@ -79,7 +79,7 @@ function hasTraversalSegment(filePath: string): boolean {
   return filePath.replace(/\\/g, '/').split('/').some(part => part === '..')
 }
 
-export function validatePath(filePath: string): string {
+export function validatePath(filePath: string, allowedRoot?: string): string {
   if (!filePath) throw Object.assign(new Error('Missing file path'), { code: 'missing_path' })
   const platformPath = normalizePlatformPath(filePath)
   if (hasTraversalSegment(platformPath)) {
@@ -89,6 +89,9 @@ export function validatePath(filePath: string): string {
   const normalized = normalize(resolved)
   if (!isAbsolute(normalized)) {
     throw Object.assign(new Error('Path must be absolute'), { code: 'invalid_path' })
+  }
+  if (allowedRoot && !isPathWithin(normalized, allowedRoot)) {
+    throw Object.assign(new Error('Path outside allowed directory'), { code: 'path_outside_root' })
   }
   return normalized
 }
@@ -144,7 +147,7 @@ export class LocalFileProvider implements FileProvider {
   constructor(private homeDir = getActiveProfileDir()) {}
 
   async readFile(filePath: string): Promise<Buffer> {
-    const p = validatePath(filePath)
+    const p = validatePath(filePath, this.homeDir)
     const s = await fsStat(p)
     if (!s.isFile()) throw Object.assign(new Error('Not a file'), { code: 'not_found' })
     if (s.size > MAX_DOWNLOAD_SIZE) {
@@ -155,7 +158,7 @@ export class LocalFileProvider implements FileProvider {
 
   async exists(filePath: string): Promise<boolean> {
     try {
-      const p = validatePath(filePath)
+      const p = validatePath(filePath, this.homeDir)
       const s = await fsStat(p)
       return s.isFile()
     } catch {
@@ -164,7 +167,7 @@ export class LocalFileProvider implements FileProvider {
   }
 
   async listDir(dirPath: string): Promise<FileEntry[]> {
-    const p = validatePath(dirPath)
+    const p = validatePath(dirPath, this.homeDir)
     const entries = await readdir(p, { withFileTypes: true })
     const results: FileEntry[] = []
     for (const entry of entries) {
@@ -187,7 +190,7 @@ export class LocalFileProvider implements FileProvider {
   }
 
   async stat(filePath: string): Promise<FileStat> {
-    const p = validatePath(filePath)
+    const p = validatePath(filePath, this.homeDir)
     const s = await fsStat(p)
     const relPath = relativePathFromBase(p, this.homeDir) ?? basename(p)
     return {
@@ -200,38 +203,38 @@ export class LocalFileProvider implements FileProvider {
   }
 
   async writeFile(filePath: string, content: Buffer): Promise<void> {
-    const p = validatePath(filePath)
+    const p = validatePath(filePath, this.homeDir)
     await fsWriteFile(p, content)
   }
 
   async deleteFile(filePath: string): Promise<void> {
-    const p = validatePath(filePath)
+    const p = validatePath(filePath, this.homeDir)
     const s = await fsStat(p)
     if (!s.isFile()) throw Object.assign(new Error('Not a file'), { code: 'not_found' })
     await rm(p)
   }
 
   async deleteDir(dirPath: string): Promise<void> {
-    const p = validatePath(dirPath)
+    const p = validatePath(dirPath, this.homeDir)
     const s = await fsStat(p)
     if (!s.isDirectory()) throw Object.assign(new Error('Not a directory'), { code: 'not_found' })
     await rm(p, { recursive: true })
   }
 
   async renameFile(oldPath: string, newPath: string): Promise<void> {
-    const op = validatePath(oldPath)
-    const np = validatePath(newPath)
+    const op = validatePath(oldPath, this.homeDir)
+    const np = validatePath(newPath, this.homeDir)
     await rename(op, np)
   }
 
   async mkDir(dirPath: string): Promise<void> {
-    const p = validatePath(dirPath)
+    const p = validatePath(dirPath, this.homeDir)
     await mkdir(p, { recursive: true })
   }
 
   async copyFile(srcPath: string, destPath: string): Promise<void> {
-    const sp = validatePath(srcPath)
-    const dp = validatePath(destPath)
+    const sp = validatePath(srcPath, this.homeDir)
+    const dp = validatePath(destPath, this.homeDir)
     await fsCopyFile(sp, dp)
   }
 }

@@ -506,7 +506,13 @@ export async function reconcileGatewayManagementTransition(
   )
 
   for (const profile of stopProfiles) {
-    const profileDir = getProfileDir(profile)
+    let profileDir: string
+    try {
+      profileDir = getProfileDir(profile)
+    } catch {
+      logger.warn('[gateway-autostart] skipping stop for profile with missing directory profile=%s', profile)
+      continue
+    }
     await stopGateway(profile, profileDir)
     result.stoppedProfiles.push(profile)
   }
@@ -517,7 +523,13 @@ export async function reconcileGatewayManagementTransition(
       continue
     }
 
-    const profileDir = getProfileDir(profile)
+    let profileDir: string
+    try {
+      profileDir = getProfileDir(profile)
+    } catch {
+      logger.warn('[gateway-autostart] skipping start for profile with missing directory profile=%s', profile)
+      continue
+    }
     await startGateway(profile, profileDir)
     const ready = await waitForGateway(profile, profileDir)
     if (!ready) {

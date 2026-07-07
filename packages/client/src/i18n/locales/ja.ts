@@ -1990,5 +1990,13 @@ export default {
     new_0_6_24_4: 'Workspace folder picker は Windows drive と junction workflow をより安定して扱い、.hermes、.config、.codex などの dot-prefixed folder を WORKSPACE_BASE の安全境界内で表示します',
     new_0_6_24_5: 'Plugins ページから管理可能な user plugin を enable / disable でき、Hermes base config と現在の profile config の plugin state をより正確に表示します',
     new_0_6_24_6: 'Models ページに default provider と default model の操作を追加し、bridge terminal error の誤検知を減らし、Hermes Agent runtime packaging を 0.18.0 に更新し、website version manifest も更新しました',
+    new_0_7_0_1: 'リブランディング: Hermes Web UI は Hermes Fleet に名称変更され、リポジトリは Gitee に移行し、ロゴとアイコンが更新されました',
+    new_0_7_0_2: 'セキュリティ: マルチプロファイルのファイル分離の脆弱性を修正 — プロファイルディレクトリが存在しない場合、ルートへのサイレントフォールバックが行われなくなりました',
+    new_0_7_0_3: 'Ekko Agent がランタイムコンテキスト、ブラウザツール、安定したツールイベント、コンテキスト使用状況追跡とともにチャットに統合されました',
+    new_0_7_0_4: 'Journey 学習グラフビューをインタラクティブなグラフ探索機能とともに追加しました',
+    new_0_7_0_5: 'ワークスペースの実行変更がチャット差分カードとして表示されるようになり、ファイルシステムワークスペースをサポートしました',
+    new_0_7_0_6: 'Coding Agent セッションで推論とコンテキスト設定がより明確に表示され、APIモードが永続化され、コンテキスト使用量の急増が修正されました',
+    new_0_7_0_7: 'MCP available-models はエージェントコンテキストの洪水を防ぐため、デフォルトでコンパクトなサマリーを返すようになりました',
+    new_0_7_0_8: 'デスクトップダウンロードエントリ、Docker Compose 設定、設定回路バッジコンポーネントを削除しました',
   },
 }

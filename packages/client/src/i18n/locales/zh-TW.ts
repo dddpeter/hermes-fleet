@@ -2381,5 +2381,13 @@ export default {
     new_0_6_24_4: '工作區目錄選擇器更可靠地支援 Windows 磁碟和 junction 場景，並會顯示 .hermes、.config、.codex 等點前綴目錄，同時保留 WORKSPACE_BASE 安全邊界',
     new_0_6_24_5: 'Plugins 頁面支援啟用或停用可管理的使用者外掛，並能更準確地合併顯示 Hermes 基礎設定和目前 profile 的外掛狀態',
     new_0_6_24_6: 'Models 頁面新增設定預設 provider 和預設模型操作；bridge 終端錯誤識別減少誤報，Hermes Agent runtime 打包升級到 0.18.0，官網版本清單也已更新',
+    new_0_7_0_1: '品牌重塑：Hermes Web UI 更名為 Hermes Fleet，程式碼庫遷移至 Gitee，並更新 logo 與圖示',
+    new_0_7_0_2: '安全性：修復多設定檔檔案隔離漏洞——缺少的設定檔目錄不再無聲退回根目錄',
+    new_0_7_0_3: 'Ekko Agent 整合至聊天中，具備執行階段上下文、瀏覽器工具、穩定的工具事件及上下文使用量追蹤',
+    new_0_7_0_4: '新增 Journey 學習圖視覺化檢視，支援互動式圖譜探索',
+    new_0_7_0_5: '工作區執行變更現以聊天 diff 卡片呈現，並支援檔案系統工作區',
+    new_0_7_0_6: 'Coding Agent 工作階段更清晰顯示推理與上下文設定，持久化 API 模式，並修正上下文使用量跳動問題',
+    new_0_7_0_7: 'MCP available-models 預設傳回精簡摘要，避免氾濫代理上下文',
+    new_0_7_0_8: '移除桌面端下載入口、Docker Compose 設定及設定電路徽章元件',
   },
 }
