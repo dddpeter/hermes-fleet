@@ -9,7 +9,7 @@ backend, and an Electron desktop distribution around Hermes Agent.
 | --- | --- | --- |
 | Client | `packages/client/src` | Vue UI, routing, Pinia stores, API wrappers, i18n, browser-visible state. |
 | Server | `packages/server/src` | HTTP API, auth, Socket.IO, SQLite stores, file access, Hermes runtime integration. |
-| Desktop | `packages/desktop` | Electron shell, local Web UI server bootstrap, updater, bundled Python/Hermes runtime. |
+| ~~Desktop~~ | Removed — backed up to `feature/desktop-backup` branch | Electron shell removed; web-only deployment. |
 | Tests | `tests` | Vitest unit/integration tests and Playwright browser tests. |
 | CI | `.github/workflows` | Build, e2e, lockfile, and Web UI release automation. |
 
@@ -73,9 +73,8 @@ Frontend rules:
   marking the release as GitHub latest.
 
 The Electron desktop distribution under `packages/desktop` is kept in the
-repository for reference but its CI packaging workflows are no longer active.
-Desktop builds can still be produced locally with the `packages/desktop`
-scripts if needed.
+repository has been removed. Use the `feature/desktop-backup` branch if
+desktop builds are ever needed again.
 
 ## Validation Surface
 
