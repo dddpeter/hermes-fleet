@@ -1,12 +1,13 @@
 import Router from '@koa/router'
+import { readFile } from 'fs/promises'
 import { basename, extname, isAbsolute } from 'path'
 import {
   createFileProvider,
-  localProvider,
   isInUploadDir,
   validatePath,
   resolveHermesPath,
 } from '../../services/hermes/file-provider'
+import { isInProfileUploadDir } from '../../services/hermes/upload-paths'
 import { getActiveProfileName } from '../../services/hermes/hermes-profile'
 
 export const downloadRoutes = new Router()
@@ -83,10 +84,16 @@ downloadRoutes.get('/api/hermes/download', async (ctx) => {
     // Support both absolute and relative paths
     const validPath = isAbsolute(filePath) ? validatePath(filePath) : resolveHermesPath(filePath, profile)
 
-    // Choose provider: always use local for upload directory files
+    // Upload directory files are outside any profile — read directly,
+    // but only allow access to the requesting profile's own uploads.
     let data: Buffer
     if (isInUploadDir(validPath)) {
-      data = await localProvider.readFile(validPath)
+      if (!isInProfileUploadDir(validPath, profile || 'default')) {
+        ctx.status = 403
+        ctx.body = { error: 'Access denied: file belongs to another profile', code: 'access_denied' }
+        return
+      }
+      data = await readFile(validPath)
     } else {
       const provider = await createFileProvider(profile)
       data = await provider.readFile(validPath)

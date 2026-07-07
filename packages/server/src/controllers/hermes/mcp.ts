@@ -87,7 +87,19 @@ export async function testServer(ctx: Context) {
       ctx.body = { error: 'Valid server name is required' }
       return
     }
-    ctx.body = await bridgeMcpAction('mcp_server_test', { name }, getProfile(ctx))
+    const profile = getProfile(ctx)
+    try {
+      ctx.body = await bridgeMcpAction('mcp_server_test', { name }, profile)
+    } catch (firstErr: any) {
+      // Only retry with reload when the server is not yet initialized.
+      // Other errors (bad config, timeout, auth failure) should surface directly.
+      const msg = String(firstErr?.message || '').toLowerCase()
+      if (!msg.includes('not connected') && !msg.includes('not running') && !msg.includes('no such server')) {
+        throw firstErr
+      }
+      await bridgeMcpAction('mcp_reload', { server: name }, profile)
+      ctx.body = await bridgeMcpAction('mcp_server_test', { name }, profile)
+    }
   } catch (err: any) {
     ctx.status = 503
     ctx.body = { error: err.message || 'Failed to test MCP server' }
