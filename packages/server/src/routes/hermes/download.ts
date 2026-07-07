@@ -1,8 +1,8 @@
 import Router from '@koa/router'
+import { readFile } from 'fs/promises'
 import { basename, extname, isAbsolute } from 'path'
 import {
   createFileProvider,
-  localProvider,
   isInUploadDir,
   validatePath,
   resolveHermesPath,
@@ -83,10 +83,10 @@ downloadRoutes.get('/api/hermes/download', async (ctx) => {
     // Support both absolute and relative paths
     const validPath = isAbsolute(filePath) ? validatePath(filePath) : resolveHermesPath(filePath, profile)
 
-    // Choose provider: always use local for upload directory files
+    // Upload directory files are outside any profile — read directly.
     let data: Buffer
     if (isInUploadDir(validPath)) {
-      data = await localProvider.readFile(validPath)
+      data = await readFile(validPath)
     } else {
       const provider = await createFileProvider(profile)
       data = await provider.readFile(validPath)
