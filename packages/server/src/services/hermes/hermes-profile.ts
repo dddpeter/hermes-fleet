@@ -14,14 +14,19 @@ export function getHermesBaseDir(): string {
 export function getActiveProfileDir(): string {
   const hermesBase = getHermesBaseDir()
   const activeFile = join(hermesBase, 'active_profile')
+  let name: string | undefined
   try {
-    const name = readFileSync(activeFile, 'utf-8').trim()
-    if (name && name !== 'default') {
-      const dir = join(hermesBase, 'profiles', name)
-      if (existsSync(dir)) return dir
-    }
-  } catch { }
-  return hermesBase
+    name = readFileSync(activeFile, 'utf-8').trim()
+  } catch {
+    // active_profile file missing or unreadable — use default
+    return hermesBase
+  }
+  if (!name || name === 'default') return hermesBase
+  const dir = join(hermesBase, 'profiles', name)
+  if (!existsSync(dir)) {
+    throw Object.assign(new Error(`Active profile directory not found: ${name}`), { code: 'profile_not_found' })
+  }
+  return dir
 }
 
 /**
@@ -67,7 +72,10 @@ export function getProfileDir(name: string): string {
   const hermesBase = getHermesBaseDir()
   if (!name || name === 'default') return hermesBase
   const dir = join(hermesBase, 'profiles', name)
-  return existsSync(dir) ? dir : hermesBase
+  if (!existsSync(dir)) {
+    throw Object.assign(new Error(`Profile directory not found: ${name}`), { code: 'profile_not_found' })
+  }
+  return dir
 }
 
 export function listProfileNamesFromDisk(): string[] {

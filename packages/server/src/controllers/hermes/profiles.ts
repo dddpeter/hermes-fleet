@@ -764,6 +764,18 @@ export async function remove(ctx: any) {
     const ok = await hermesCli.deleteProfile(name)
     if (ok && !profileDirectoryExists(name)) {
       removeProfileMetadata(name)
+
+      // Clean up orphaned coding-agent model/workspace directories for this profile.
+      const caBase = join(getWebUiHome(), 'coding-agent')
+      for (const subdir of ['model', 'workspace']) {
+        const dir = join(caBase, subdir, name)
+        try {
+          if (existsSync(dir)) rmSync(dir, { recursive: true })
+        } catch (err) {
+          logger.warn(err, '[profiles] failed to clean coding-agent/%s for deleted profile "%s"', subdir, name)
+        }
+      }
+
       ctx.body = { success: true }
     } else if (ok) {
       ctx.status = 500
@@ -794,10 +806,34 @@ export async function rename(ctx: any) {
     ctx.body = { error: `Profile name '${new_name}' is reserved and cannot be used` }
     return
   }
+  const oldName = ctx.params.name
   try {
-    const ok = await hermesCli.renameProfile(ctx.params.name, new_name)
+    // Clean up bridge sessions for the old profile name before renaming.
+    try {
+      const result = await bridgeCleanupClient().destroyProfile(oldName)
+      logger.info('[profiles] destroyed bridge sessions for renamed profile "%s" destroyed=%s', oldName, result.destroyed)
+    } catch (err) {
+      logger.warn(err, '[profiles] failed to destroy bridge sessions for renamed profile "%s"', oldName)
+    }
+
+    const ok = await hermesCli.renameProfile(oldName, new_name)
     if (ok) {
-      renameProfileMetadata(ctx.params.name, new_name)
+      renameProfileMetadata(oldName, new_name)
+
+      // Migrate coding-agent model/workspace directories so they track the new name.
+      const caBase = join(getWebUiHome(), 'coding-agent')
+      for (const subdir of ['model', 'workspace']) {
+        const src = join(caBase, subdir, oldName)
+        const dest = join(caBase, subdir, new_name)
+        try {
+          if (existsSync(src)) {
+            renameSync(src, dest)
+          }
+        } catch (err) {
+          logger.warn(err, '[profiles] failed to migrate coding-agent/%s for profile rename %s → %s', subdir, oldName, new_name)
+        }
+      }
+
       ctx.body = { success: true }
     } else {
       ctx.status = 500

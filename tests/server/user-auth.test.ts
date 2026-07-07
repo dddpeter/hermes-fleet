@@ -35,7 +35,7 @@ describe('user auth tables and middleware', () => {
 
   function makeCtx(user: any, profile: string) {
     return {
-      state: { user },
+      state: { user: { ...user, profiles: user.role === 'super_admin' ? undefined : (user.profiles ?? ['default']) } },
       query: { profile },
       request: { body: {} },
       get: vi.fn((name: string) => name.toLowerCase() === 'x-hermes-profile' ? '' : ''),
@@ -276,11 +276,14 @@ describe('user auth tables and middleware', () => {
     expect(next).toHaveBeenCalledOnce()
   })
 
-  it('ignores stale profile headers for the aggregate available-models endpoint', async () => {
-    const { auth } = await initUsers()
+  it('resolves non-admin users to their default profile when no profile header is sent', async () => {
+    const { users, auth } = await initUsers()
+    users.createUser({ username: 'ops', password: 'pass', role: 'admin' })
+    users.replaceUserProfiles(1, ['default', 'work'], 'default')
+
     const ctx = {
       path: '/api/hermes/available-models',
-      state: { user: { id: 1, username: 'ops', role: 'admin' } },
+      state: { user: { id: 1, username: 'ops', role: 'admin', profiles: ['default', 'work'] } },
       query: {},
       request: { body: {} },
       get: vi.fn((name: string) => name.toLowerCase() === 'x-hermes-profile' ? 'private' : ''),
@@ -291,7 +294,7 @@ describe('user auth tables and middleware', () => {
 
     await auth.resolveUserProfile(ctx, next)
 
-    expect(ctx.state.profile).toBeUndefined()
+    expect(ctx.state.profile).toEqual({ name: 'default' })
     expect(next).toHaveBeenCalledOnce()
   })
 

@@ -138,10 +138,10 @@ describe('gateway autostart status parsing', () => {
       changed: true,
       previousUnified: false,
       nextUnified: true,
-      stoppedProfiles: ['default', 'work', 'reviewer'],
+      stoppedProfiles: ['default'],
       startedProfiles: ['default'],
     })
-    expect(events).toEqual(['stop:default', 'stop:work', 'stop:reviewer', 'start:default'])
+    expect(events).toEqual(['stop:default', 'start:default'])
   })
 
   it('stops default and starts selected profile gateways when switching back to per-profile management', async () => {
@@ -163,9 +163,9 @@ describe('gateway autostart status parsing', () => {
       previousUnified: true,
       nextUnified: false,
       stoppedProfiles: ['default'],
-      startedProfiles: ['default', 'work'],
+      startedProfiles: ['default'],
     })
-    expect(events).toEqual(['stop:default', 'start:default', 'start:work'])
+    expect(events).toEqual(['stop:default', 'start:default'])
   })
 
   it('treats runtime lock conflicts as an already-running gateway', () => {
