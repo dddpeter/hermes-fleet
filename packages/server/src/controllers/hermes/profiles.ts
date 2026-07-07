@@ -1,6 +1,7 @@
 import { createReadStream, existsSync, readFileSync, readdirSync, renameSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { basename, join } from 'path'
+import { randomBytes } from 'crypto'
 import { tmpdir } from 'os'
 import { getWebUiHome } from '../../config'
 import * as hermesCli from '../../services/hermes/hermes-cli'
@@ -483,6 +484,49 @@ async function ensureProfilePlatformPorts(name: string): Promise<void> {
   }
 }
 
+/**
+ * 为新建 profile 的 .env 注入平台接入默认值。
+ * 仅在 key 不存在时写入，避免覆盖 clone 源的配置或用户手动修改。
+ */
+async function injectDefaultEnvForNewProfile(name: string): Promise<void> {
+  if (!name || name === 'default') return
+  try {
+    const envPath = join(getProfileDir(name), '.env')
+    const raw = existsSync(envPath) ? readFileSync(envPath, 'utf-8') : ''
+    const existingKeys = new Set<string>()
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('#')) continue
+      const eqIdx = trimmed.indexOf('=')
+      if (eqIdx !== -1) existingKeys.add(trimmed.slice(0, eqIdx).trim())
+    }
+
+    const defaults: Record<string, string> = {
+      WEIXIN_DM_POLICY: 'open',
+      WEIXIN_ALLOW_ALL_USERS: 'true',
+      WEIXIN_GROUP_POLICY: 'open',
+      FEISHU_GROUP_POLICY: 'open',
+      FEISHU_REQUIRE_MENTION: 'true',
+    }
+    // 仅当 key 不存在时才写入固定默认值
+    for (const [key, value] of Object.entries(defaults)) {
+      if (!existingKeys.has(key)) {
+        await saveEnvValueForProfile(name, key, value)
+      }
+    }
+
+    // API_SERVER_KEY 始终自动生成（除非已存在）
+    if (!existingKeys.has('API_SERVER_KEY')) {
+      const apiKey = randomBytes(24).toString('hex')
+      await saveEnvValueForProfile(name, 'API_SERVER_KEY', apiKey)
+    }
+
+    logger.info('[profiles] injected default env template for "%s"', name)
+  } catch (err: any) {
+    logger.warn(err, '[profiles] failed to inject default env for "%s"', name)
+  }
+}
+
 export async function create(ctx: any) {
   const { name, clone } = ctx.request.body as { name?: string; clone?: boolean }
   if (!name) {
@@ -538,6 +582,9 @@ export async function create(ctx: any) {
     // multiple native gateways can bind their own platform ports. Runs after
     // clone cleanup (no overlap) and before skills injection. Idempotent + soft.
     await ensureProfilePlatformPorts(name)
+
+    // Inject default env template for quick platform onboarding (WeChat, Feishu, etc.)
+    await injectDefaultEnvForNewProfile(name)
 
     await injectBundledSkillsForProfile(name)
 
