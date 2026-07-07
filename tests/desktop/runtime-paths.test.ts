@@ -143,7 +143,7 @@ describe('desktop runtime paths', () => {
 
   it('falls back to the bundled Web UI when the active Web UI directory is incomplete', async () => {
     const homeDir = tempDir()
-    const activeWebUiDir = join(homeDir, 'webui', '0.6.26')
+    const activeWebUiDir = join(homeDir, 'webui', '0.7.0')
     const bundledWebUiDir = join(process.resourcesPath, 'webui')
     process.env.HERMES_WEB_UI_HOME = homeDir
     mockElectronApp.isPackaged = true
@@ -155,7 +155,7 @@ describe('desktop runtime paths', () => {
     mkdirSync(join(homeDir, 'desktop-runtime'), { recursive: true })
     writeFileSync(join(homeDir, 'desktop-runtime', 'active-version.json'), JSON.stringify({
       schema: 1,
-      webUiVersion: '0.6.26',
+      webUiVersion: '0.7.0',
       webUiDirectory: activeWebUiDir,
       platform: runtimePlatformKey(),
     }))

@@ -1990,5 +1990,13 @@ export default {
     new_0_6_24_4: 'Workspace folder picker는 Windows drive와 junction workflow를 더 안정적으로 탐색하고 .hermes, .config, .codex 같은 dot-prefixed folder를 WORKSPACE_BASE 안전 경계 안에서 표시합니다',
     new_0_6_24_5: 'Plugins 페이지에서 관리 가능한 user plugin을 enable / disable할 수 있으며 Hermes base config와 현재 profile config의 plugin state를 더 정확히 표시합니다',
     new_0_6_24_6: 'Models 페이지에 default provider와 default model 작업을 추가했고 bridge terminal error 오탐을 줄였으며 Hermes Agent runtime packaging을 0.18.0으로 올리고 website version manifest도 갱신했습니다',
+    new_0_7_0_1: '리브랜딩: Hermes Web UI가 Hermes Fleet으로 이름이 변경되고, 저장소가 Gitee로 이전되었으며, 로고와 아이콘이 업데이트되었습니다',
+    new_0_7_0_2: '보안: 멀티 프로필 파일 격리 취약점 수정 — 프로필 디렉토리가 없을 때 루트로 자동 폴백하지 않습니다',
+    new_0_7_0_3: 'Ekko Agent가 런타임 컨텍스트, 브라우저 도구, 안정적인 도구 이벤트, 컨텍스트 사용량 추적과 함께 채팅에 통합되었습니다',
+    new_0_7_0_4: '인터랙티브 그래프 탐색 기능을 갖춘 Journey 학습 그래프 뷰가 추가되었습니다',
+    new_0_7_0_5: '워크스페이스 실행 변경 사항이 채팅 diff 카드로 표시되며, 파일시스템 워크스페이스를 지원합니다',
+    new_0_7_0_6: 'Coding Agent 세션에서 추론 및 컨텍스트 설정이 더 명확하게 표시되고, API 모드가 유지되며, 컨텍스트 사용량 급증 문제가 수정되었습니다',
+    new_0_7_0_7: 'MCP available-models는 에이전트 컨텍스트 과부하를 방지하기 위해 기본적으로 요약 형태를 반환합니다',
+    new_0_7_0_8: '데스크톱 다운로드 항목, Docker Compose 설정, 설정 회로 배지 컴포넌트를 제거했습니다',
   },
 }

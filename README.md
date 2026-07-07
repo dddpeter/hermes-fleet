@@ -131,10 +131,23 @@ Unified configuration for **8 platforms** in one page:
 - Launch and monitor local coding-agent sessions from the web dashboard
 - Dedicated proxy routes for Codex and Claude Code integrations
 - Stores agent output and reasoning metadata for later inspection
+- Ekko Agent with runtime context, browser tools, and stable tool event delivery
+- Workspace run diff cards — see file-level changes from each agent run directly in the chat timeline
+- Persisted API mode per session with clear reasoning and context settings
+
+### Journey
+
+- Learning graph view that visualizes concept relationships and exploration paths
+- Interactive graph exploration with polished node and edge interactions
+
+### Web Pet & PetDex
+
+- Desktop pet window with animated companions
+- PetDex browser for collecting and managing pets
 
 ### Skills & Memory
 
-- Browse and search installed skills
+- Browse, search, and edit installed skills
 - View skill details and attached files
 - User notes and profile management
 
