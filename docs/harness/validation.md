@@ -46,8 +46,8 @@ the Web UI release workflow must keep the published GitHub Release out of
 latest.
 
 The Electron desktop distribution under `packages/desktop` is retained for
-reference but no longer has CI packaging workflows; desktop builds, if needed,
-are produced locally via the `packages/desktop` scripts.
+reference in the `feature/desktop-backup` branch; desktop builds are no
+longer part of this repository's active development.
 
 ## Failure Handling
 

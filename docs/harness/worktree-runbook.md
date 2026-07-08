@@ -24,7 +24,7 @@ npm rebuild node-pty
 Desktop package dependencies are separate:
 
 ```bash
-npm ci --prefix packages/desktop --no-audit --no-fund
+(Desktop package removed — see `feature/desktop-backup` branch.)
 ```
 
 ## Isolated Runtime
