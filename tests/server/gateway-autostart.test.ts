@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
+import net from 'net'
 import {
   gatewayAutostartDisabledByEnv,
   gatewayAutoStartManagementMode,
@@ -9,7 +10,8 @@ import {
   gatewayStatusLooksRuntimeLocked,
   gatewayStatusLooksRunning,
   gatewayStateLooksRunningForProfile,
-  parseGatewayStatusesFromProfileListOutput,
+  isGatewayRunningForProfileDir,
+  listGatewayStatusesForProfiles,
   prepareGatewayForProfileDelete,
   recoverWindowsDesktopGatewayOrphans,
   reconcileGatewayManagementTransition,
@@ -21,6 +23,7 @@ import {
   shouldUseManagedGatewayRun,
   shouldUseManagedGatewayRunForAutostart,
 } from '../../packages/server/src/services/hermes/gateway-autostart'
+import { isGatewayAliveViaControlSocket, windowsGatewayControlPipeName } from '../../packages/server/src/services/hermes/gateway-control-socket'
 
 describe('gateway autostart status parsing', () => {
   it('selects all profiles by default for gateway autostart', () => {
@@ -178,30 +181,56 @@ describe('gateway autostart status parsing', () => {
     expect(gatewayStatusLooksRunning('Gateway is not running')).toBe(false)
   })
 
-  it('parses gateway status from hermes profile list output', () => {
-    const output = `
- Profile          Model                        Gateway      Alias        Distribution
- ───────────────    ───────────────────────────    ───────────    ───────────    ────────────────────
- ◆default         glm-5-turbo                  running      —            —
-  akri            glm-5-turbo                  running      akri         —
-  tester          gpt-5.5                      stopped      tester       —
-`
-    const statuses = parseGatewayStatusesFromProfileListOutput(output, ['default', 'akri', 'tester'])
-    expect(statuses.get('default')).toBe('running')
-    expect(statuses.get('akri')).toBe('running')
-    expect(statuses.get('tester')).toBe('stopped')
+  it('reads gateway statuses from profile files without parsing CLI output', async () => {
+    const previousHome = process.env.HERMES_HOME
+    const home = mkdtempSync(join(tmpdir(), 'hermes-gw-status-'))
+    try {
+      process.env.HERMES_HOME = home
+      // The default profile IS the home dir; a running pid makes it "running".
+      writeFileSync(join(home, 'gateway_state.json'), JSON.stringify({
+        gateway_state: 'running',
+        pid: process.pid,
+      }))
+      mkdirSync(join(home, 'profiles', 'idle'), { recursive: true })
+
+      const statuses = await listGatewayStatusesForProfiles(['default', 'idle'])
+      expect(statuses.get('default')).toBe('running')
+      expect(statuses.get('idle')).toBe('stopped')
+    } finally {
+      if (previousHome === undefined) delete process.env.HERMES_HOME
+      else process.env.HERMES_HOME = previousHome
+      rmSync(home, { recursive: true, force: true })
+    }
   })
 
-  it('parses gateway status when profile or model fills the table column', () => {
-    const output = `
- Profile          Model                        Gateway      Alias        Distribution
- ───────────────    ───────────────────────────    ───────────    ───────────    ────────────────────
-  daily_assistant deepseek-v4-flash            running      —            —
-  long_model      provider/model-name-that-fills-column stopped      —            —
-`
-    const statuses = parseGatewayStatusesFromProfileListOutput(output, ['daily_assistant', 'long_model'])
-    expect(statuses.get('daily_assistant')).toBe('running')
-    expect(statuses.get('long_model')).toBe('stopped')
+  it('detects a live gateway through the control socket identify handshake', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'hermes-gw-ctl-'))
+    const endpoint = process.platform === 'win32'
+      ? windowsGatewayControlPipeName(home)
+      : join(home, 'gateway.sock')
+    const server = net.createServer(socket => {
+      socket.once('data', () => {
+        socket.end(`${JSON.stringify({ ok: true, protocol: 1, result: { pid: process.pid } })}\n`)
+      })
+    })
+    await new Promise<void>(resolve => server.listen(endpoint, () => resolve()))
+    try {
+      expect(await isGatewayAliveViaControlSocket(home, 2000)).toBe(true)
+      expect(await isGatewayRunningForProfileDir(home)).toBe(true)
+    } finally {
+      await new Promise<void>(resolve => server.close(() => resolve()))
+      if (process.platform !== 'win32' && existsSync(endpoint)) rmSync(endpoint, { force: true })
+      rmSync(home, { recursive: true, force: true })
+    }
+  })
+
+  it('reports no gateway when the control socket does not answer', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'hermes-gw-ctl-missing-'))
+    try {
+      expect(await isGatewayAliveViaControlSocket(home, 200)).toBe(false)
+    } finally {
+      rmSync(home, { recursive: true, force: true })
+    }
   })
 
   it('uses profile-list gateway status text for running checks', () => {

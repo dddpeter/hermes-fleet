@@ -7,7 +7,7 @@ import { readAppConfig, type GatewayAutoStartConfig } from '../app-config'
 import { logger } from '../logger'
 import { getHermesBaseDir, getProfileDir, listProfileNamesFromDisk } from './hermes-profile'
 import { retireManagedGatewayForProfile, startGatewayRunManaged } from './gateway-runner'
-import { parseGatewayStatusesFromProfileList } from './profile-list-parser'
+import { isGatewayAliveViaControlSocket } from './gateway-control-socket'
 import { execHermesWithBin } from './hermes-process'
 
 const execFileAsync = promisify(execFile)
@@ -362,27 +362,30 @@ export function gatewayStateLooksRunningForProfile(profileDir: string): boolean 
   return pid !== null && isProcessAlive(pid)
 }
 
-export function parseGatewayStatusesFromProfileListOutput(stdout: string, profileNames = listProfileNamesFromDisk()): Map<string, string> {
-  return parseGatewayStatusesFromProfileList(stdout, profileNames)
+/**
+ * Control socket first ("a connectable socket with a well-formed identify
+ * answer IS liveness"), then the pid-file/process-table probe. No CLI output
+ * parsing anywhere on this path.
+ */
+export async function isGatewayRunningForProfileDir(profileDir: string): Promise<boolean> {
+  if (await isGatewayAliveViaControlSocket(profileDir)) return true
+  return gatewayStateLooksRunningForProfile(profileDir)
 }
 
-async function listGatewayStatusesFromProfileList(hermesBin: string): Promise<Map<string, string>> {
-  const { stdout } = await execHermesWithBin(hermesBin, ['profile', 'list'], {
-    timeout: 10000,
-    windowsHide: true,
-  })
-  return parseGatewayStatusesFromProfileListOutput(stdout)
-}
-
-async function isGatewayRunningInProfileList(hermesBin: string, profile: string): Promise<boolean> {
-  const statuses = await listGatewayStatusesFromProfileList(hermesBin)
-  const status = statuses.get(profile)
-  return status !== undefined && gatewayStatusLooksRunning(status)
+export async function listGatewayStatusesForProfiles(profileNames = listProfileNamesFromDisk()): Promise<Map<string, string>> {
+  const statuses = new Map<string, string>()
+  for (const name of profileNames) {
+    statuses.set(name, (await isGatewayRunningForProfileDir(getProfileDir(name))) ? 'running' : 'stopped')
+  }
+  return statuses
 }
 
 export async function isGatewayRunningForProfile(hermesBin: string, profileDir: string): Promise<boolean> {
-  if (gatewayStateLooksRunningForProfile(profileDir)) return true
+  if (await isGatewayRunningForProfileDir(profileDir)) return true
 
+  // Last-resort CLI fallback for gateways managed outside this process
+  // (launchd/systemd services) that expose neither a control socket nor
+  // readable pid files.
   try {
     const { stdout, stderr } = await execHermesWithBin(hermesBin, ['gateway', 'status'], {
       timeout: 10000,
@@ -409,11 +412,7 @@ export async function isGatewayRunningForProfile(hermesBin: string, profileDir: 
 async function waitForGatewayRunning(hermesBin: string, profile: string, profileDir: string, timeoutMs = 15000): Promise<boolean> {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
-    try {
-      if (await isGatewayRunningInProfileList(hermesBin, profile)) return true
-    } catch (err) {
-      logger.warn(err, '[gateway-autostart] Hermes profile list check failed while waiting for gateway profile=%s', profile)
-    }
+    if (await isGatewayRunningForProfileDir(profileDir)) return true
     if (await isGatewayRunningForProfile(hermesBin, profileDir)) return true
     await new Promise(resolve => setTimeout(resolve, 500))
   }
@@ -707,9 +706,9 @@ export async function ensureProfileGatewaysRunning(): Promise<void> {
   }
   let gatewayStatuses: Map<string, string> | undefined
   try {
-    gatewayStatuses = await listGatewayStatusesFromProfileList(hermesBin)
+    gatewayStatuses = await listGatewayStatusesForProfiles(profiles)
   } catch (err) {
-    logger.warn(err, '[gateway-autostart] Hermes profile list failed; falling back to per-profile gateway status checks')
+    logger.warn(err, '[gateway-autostart] gateway status probe failed; falling back to per-profile gateway status checks')
   }
 
   for (const profile of profiles) {
@@ -720,7 +719,7 @@ export async function ensureProfileGatewaysRunning(): Promise<void> {
 
     const profileDir = getProfileDir(profile)
     const status = gatewayStatuses?.get(profile)
-    const running = status !== undefined && gatewayStatusLooksRunning(status)
+    const running = status === 'running'
       ? true
       : await isGatewayRunningForProfile(hermesBin, profileDir)
     if (running) {

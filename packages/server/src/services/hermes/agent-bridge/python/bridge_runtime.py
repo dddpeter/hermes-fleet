@@ -825,8 +825,10 @@ def _load_enabled_toolsets() -> list[str] | None:
 def _discover_bridge_mcp_tools() -> list[str]:
     _ensure_agent_imports()
     try:
-        from tools.mcp_tool import discover_mcp_tools
+        from hermes_compat import import_attr
 
+        # Moved to tools.mcp_tool_discovery in the Sep 2026 Hermes decomposition.
+        discover_mcp_tools = import_attr("tools.mcp_tool_discovery", "discover_mcp_tools", "tools.mcp_tool")
         tools = discover_mcp_tools()
         return list(tools) if isinstance(tools, list) else []
     except Exception as exc:
@@ -838,9 +840,20 @@ def _discover_bridge_mcp_tools() -> list[str]:
         return []
 
 
+def _hermes_agent_version() -> str:
+    try:
+        from hermes_cli import __version__ as hermes_version
+
+        return str(hermes_version)
+    except Exception:
+        return ""
+
+
 def _log_worker_startup_context(profile: str | None) -> None:
     profile_name = profile or _worker_profile() or "default"
     try:
+        from hermes_compat import fallbacks_used
+
         cfg = _load_cfg()
         enabled_toolsets = _load_enabled_toolsets()
         discovered_mcp_tools = _discover_bridge_mcp_tools()
@@ -870,6 +883,8 @@ def _log_worker_startup_context(profile: str | None) -> None:
         _bridge_log("bridge.worker.initialized", {
             "profile": profile_name,
             "platform": _bridge_platform(),
+            "hermes_agent_version": _hermes_agent_version(),
+            "hermes_compat_fallbacks": fallbacks_used(),
             "hermes_home": str(_hermes_home()),
             "base_hermes_home": str(_base_hermes_home()),
             "config_path": str(_hermes_home() / "config.yaml"),

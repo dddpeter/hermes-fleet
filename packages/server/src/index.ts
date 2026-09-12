@@ -25,6 +25,7 @@ import { injectBundledMcpServer } from './services/hermes/studio-mcp-autoinject'
 import { ensureProfileGatewaysRunning } from './services/hermes/gateway-autostart'
 import { detectHermesRootHome } from './services/hermes/hermes-path'
 import { listProfileNamesFromDisk } from './services/hermes/hermes-profile'
+import { getVersion } from './services/hermes/hermes-cli'
 import { refreshConfiguredProviderModelCatalogsInBackground } from './services/hermes/model-catalog-cache'
 import { scanLanDevices, startLanDiscoveryResponder } from './services/lan-discovery'
 import { getLanPeerSocketManager, getLanPeerSocketPath } from './services/lan-peer-socket'
@@ -190,6 +191,12 @@ async function startRuntimeServicesBeforeListen(): Promise<void> {
   } catch (err) {
     logger.warn(err, '[bootstrap] failed to ensure active_profile exists')
   }
+
+  // Surface the resolved hermes-agent version once per server start so a
+  // version mismatch with the bridge's expectations shows up in logs.
+  void getVersion()
+    .then(version => { if (version) console.log(`[bootstrap] hermes-agent version: ${version}`) })
+    .catch(() => { /* version probe is best-effort */ })
 
   if (gatewayAutostartDisabled()) {
     console.log('[bootstrap] profile gateway check disabled by HERMES_WEB_UI_DISABLE_GATEWAY_AUTOSTART')

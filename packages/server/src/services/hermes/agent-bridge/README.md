@@ -82,6 +82,33 @@ the installed `hermes` command, then the system Python.
 The socket transport uses Python and Node standard libraries. No ZMQ dependency
 is required.
 
+## Hermes Internal Imports Are Not a Stable API
+
+The bridge imports Hermes Agent internals directly (`run_agent.AIAgent`,
+`tools.approval_context`, `tools.mcp_tool_loop`, …). Upstream says this
+explicitly: internal import paths are not a stable API, and its September 2026
+decomposition moved many symbols (see `COMPAT_MANIFEST.md` in the
+hermes-agent repo; the temporary PLUGIN-COMPAT re-export shims were removed
+on 2026-09-14, and private `_`-prefixed names were never covered at all).
+
+Rules for this directory:
+
+- When a symbol moves upstream, resolve it through
+  `python/hermes_compat.py::import_attr(new_module, name, old_module)` — it
+  tries the current location first, falls back to the pre-decomposition
+  location for older Hermes installs, and raises `ImportError` when the
+  symbol exists in neither. Do **not** scatter new try/except imports at call
+  sites.
+- The moved-symbol call sites are covered by
+  `tests/server/agent-bridge-compat-resolution.test.ts`, which includes a
+  regression guard against raw imports of known-moved symbols.
+- Before claiming support for a new hermes-agent version, re-verify every
+  bridge import against that tree (see
+  `docs/planning/hermes-agent-compat-0.21.md` for the audit method).
+- Long term, the bridge should migrate off Hermes internals onto the official
+  integration protocols (TUI Gateway JSON-RPC / ACP) — see
+  `docs/planning/hermes-agent-integration-roadmap.md`.
+
 ## Backend Usage
 
 ```ts

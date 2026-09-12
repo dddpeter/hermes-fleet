@@ -1,11 +1,10 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
+import { existsSync, readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
+import YAML from 'js-yaml'
 import { getActiveProfileDir, getHermesBaseDir, getProfileDir } from './hermes-profile'
 import { resolveAgentBridgeCommand } from './agent-bridge/manager'
+import { execHermes } from './hermes-process'
 import { safeFileStore } from '../safe-file-store'
-
-const execFileAsync = promisify(execFile)
 
 export type HermesPluginSource = 'bundled' | 'user' | 'project' | 'entrypoint'
 export type HermesPluginKind = 'standalone' | 'backend' | 'exclusive' | 'platform' | 'model-provider'
@@ -46,232 +45,260 @@ export interface HermesPluginMutationResult {
   enabled: boolean
 }
 
-const PYTHON_BRIDGE = String.raw`
-import json
-import os
-import sys
-import traceback
-from pathlib import Path
+// Plugin enumeration reads the documented plugin contract only: manifest files
+// (plugin.yaml) in the documented discovery directories, plus the official
+// `hermes plugins list --json` CLI for pip entry-point plugins. Hermes internal
+// Python APIs are deliberately not imported — internal import paths are not a
+// stable API (see docs/planning/hermes-agent-integration-execution.md).
+// Upstream scan semantics: hermes_cli/plugins_discovery.py::scan_directory and
+// hermes_cli/plugins_manifest.py::parse_manifest_file (hermes-agent 0.21.2).
 
-warnings = []
-agent_root = os.environ.get("HERMES_AGENT_ROOT_RESOLVED", "")
+const VALID_PLUGIN_KINDS = new Set(['standalone', 'backend', 'exclusive', 'platform', 'model-provider'])
 
-# python -c normally prepends the process cwd to sys.path. Remove it before any
-# Hermes imports so an arbitrary WUI launch directory cannot shadow modules like
-# hermes_cli, hermes_constants, utils, or yaml. The process cwd is still preserved
-# separately for optional project-plugin scanning below.
-sys.path = [entry for entry in sys.path if entry not in ("", os.getcwd())]
-if agent_root:
-    sys.path.insert(0, agent_root)
+const ENTRYPOINT_CLI_TIMEOUT_MS = 15000
 
-try:
-    from hermes_cli.plugins import (
-        PluginManager,
-        get_bundled_plugins_dir,
-        _get_disabled_plugins,
-        _get_enabled_plugins,
-    )
-    from hermes_constants import get_hermes_home
-except Exception as exc:
-    print(json.dumps({
-        "error": "Failed to import Hermes Agent plugin modules",
-        "detail": str(exc),
-        "traceback": traceback.format_exc(),
+interface ScannedManifest {
+  key: string
+  name: string
+  kind: string
+  source: string
+  version: string
+  description: string
+  author: string
+  path: string
+  providesTools: string[]
+  providesHooks: string[]
+  requiresEnv: Array<string | Record<string, unknown>>
+}
+
+function extractError(err: unknown): string {
+  const errAny = err as { message?: string; stdout?: unknown; stderr?: unknown }
+  const stdout = typeof errAny?.stdout === 'string' ? errAny.stdout.trim() : ''
+  const stderr = typeof errAny?.stderr === 'string' ? errAny.stderr.trim() : ''
+  return [errAny?.message, stdout, stderr].filter(Boolean).join('\n')
+}
+
+function envEnabled(name: string): boolean {
+  return (process.env[name] || '').trim().toLowerCase() === '1'
+    || ['true', 'yes', 'on'].includes((process.env[name] || '').trim().toLowerCase())
+}
+
+function coerceStringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string => typeof item === 'string' || typeof item === 'number')
+    .map(item => String(item))
+}
+
+function coerceEnvList(value: unknown): Array<string | Record<string, unknown>> {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string | Record<string, unknown> =>
+    typeof item === 'string' || (item !== null && typeof item === 'object'))
+}
+
+function readManifestList(data: Record<string, unknown>, ...keys: string[]): unknown[] {
+  for (const key of keys) {
+    const value = data[key]
+    if (Array.isArray(value)) return value
+  }
+  return []
+}
+
+function normalizeKind(data: Record<string, unknown>, key: string, warnings: string[]): string {
+  const raw = data.kind
+  const kind = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+  if (!kind) return 'standalone'
+  if (!VALID_PLUGIN_KINDS.has(kind)) {
+    warnings.push(`plugin ${key}: unknown kind '${raw}'; treating as 'standalone'`)
+    return 'standalone'
+  }
+  return kind
+}
+
+function parseManifestFile(
+  manifestFile: string,
+  pluginDir: string,
+  source: string,
+  prefix: string,
+  warnings: string[],
+): ScannedManifest | null {
+  let data: unknown
+  try {
+    const text = readFileSync(manifestFile, 'utf8').replace(/^\uFEFF/, '')
+    data = YAML.load(text)
+  } catch (exc) {
+    warnings.push(`manifest at ${pluginDir}: ${exc}`)
+    return null
+  }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    if (data !== null && data !== undefined) {
+      warnings.push(`manifest at ${pluginDir}: not a mapping; skipped`)
+    }
+    return null
+  }
+  const manifest = data as Record<string, unknown>
+  const dirName = pluginDir.split(/[\\/]/).pop() || pluginDir
+  const name = typeof manifest.name === 'string' && manifest.name.trim()
+    ? manifest.name.trim()
+    : dirName
+  const key = prefix ? `${prefix}/${dirName}` : name
+  return {
+    key,
+    name,
+    kind: normalizeKind(manifest, key, warnings),
+    source,
+    version: manifest.version === undefined || manifest.version === null ? '' : String(manifest.version),
+    description: typeof manifest.description === 'string' ? manifest.description : '',
+    author: typeof manifest.author === 'string' ? manifest.author : '',
+    path: pluginDir,
+    providesTools: coerceStringList(readManifestList(manifest, 'provides_tools', 'tools')),
+    providesHooks: coerceStringList(readManifestList(manifest, 'provides_hooks', 'hooks')),
+    requiresEnv: coerceEnvList(readManifestList(manifest, 'requires_env')),
+  }
+}
+
+function scanDirectory(
+  root: string,
+  source: string,
+  skipNames: ReadonlySet<string>,
+  warnings: string[],
+  prefix = '',
+  depth = 0,
+): ScannedManifest[] {
+  if (!root || !existsSync(root)) return []
+  let children: Array<import('fs').Dirent>
+  try {
+    children = readdirSync(root, { withFileTypes: true })
+  } catch (exc) {
+    warnings.push(`${source} plugins at ${root}: ${exc}`)
+    return []
+  }
+  const manifests: ScannedManifest[] = []
+  for (const child of children.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!child.isDirectory()) continue
+    if (depth === 0 && skipNames.has(child.name)) continue
+    const childPath = join(root, child.name)
+    const manifestFile = ['plugin.yaml', 'plugin.yml']
+      .map(file => join(childPath, file))
+      .find(file => existsSync(file))
+    if (manifestFile) {
+      const manifest = parseManifestFile(manifestFile, childPath, source, prefix, warnings)
+      if (manifest) manifests.push(manifest)
+    } else if (existsSync(join(childPath, 'plugin.json'))) {
+      warnings.push(`portable plugin package at ${childPath}: plugin.json manifests are not enumerated; skipped`)
+    } else if (depth < 1) {
+      const subPrefix = prefix ? `${prefix}/${child.name}` : child.name
+      manifests.push(...scanDirectory(childPath, source, skipNames, warnings, subPrefix, depth + 1))
+    }
+  }
+  return manifests
+}
+
+function readConfigYaml(home: string | undefined, warnings: string[]): Record<string, unknown> {
+  if (!home) return {}
+  try {
+    const configPath = join(home, 'config.yaml')
+    if (!existsSync(configPath)) return {}
+    const parsed = YAML.load(readFileSync(configPath, 'utf8'))
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : {}
+  } catch (exc) {
+    warnings.push(`plugin config at ${home}: ${exc}`)
+    return {}
+  }
+}
+
+function configPluginsList(config: Record<string, unknown>, key: string): Set<string> | null {
+  const plugins = config.plugins
+  if (!plugins || typeof plugins !== 'object' || Array.isArray(plugins)) return null
+  const value = (plugins as Record<string, unknown>)[key]
+  return Array.isArray(value) ? new Set(value.map(item => String(item))) : null
+}
+
+function mergedPluginConfig(
+  hermesBaseHome: string,
+  hermesHome: string,
+  warnings: string[],
+): { disabled: Set<string>; enabled: Set<string> | null } {
+  const homes: string[] = []
+  for (const home of [hermesBaseHome, hermesHome]) {
+    if (home && !homes.includes(home)) homes.push(home)
+  }
+
+  const disabled = new Set<string>()
+  const enabled = new Set<string>()
+  let sawEnabledKey = false
+  for (const home of homes) {
+    const config = readConfigYaml(home, warnings)
+    const enabledValue = configPluginsList(config, 'enabled')
+    if (enabledValue) {
+      sawEnabledKey = true
+      for (const name of enabledValue) {
+        enabled.add(name)
+        disabled.delete(name)
+      }
+    }
+    const disabledValue = configPluginsList(config, 'disabled')
+    if (disabledValue) {
+      for (const name of disabledValue) {
+        disabled.add(name)
+        enabled.delete(name)
+      }
+    }
+  }
+  return { disabled, enabled: sawEnabledKey ? enabled : null }
+}
+
+async function entrypointManifests(hermesHome: string, warnings: string[]): Promise<ScannedManifest[]> {
+  let stdout: string
+  try {
+    ({ stdout } = await execHermes(['plugins', 'list', '--json'], {
+      env: { ...process.env, HERMES_HOME: hermesHome },
+      timeout: ENTRYPOINT_CLI_TIMEOUT_MS,
+      maxBuffer: 10 * 1024 * 1024,
     }))
-    sys.exit(2)
-
-
-def env_enabled(name):
-    return os.getenv(name, "").strip().lower() in ("1", "true", "yes", "on")
-
-
-def safe_scan(label, fn):
-    try:
-        return fn()
-    except Exception as exc:
-        warnings.append(f"{label}: {exc}")
-        return []
-
-
-def coerce_list(value):
-    return value if isinstance(value, list) else []
-
-
-def read_manifest_list(plugin_path, *keys):
-    try:
-        import yaml
-        plugin_dir = Path(plugin_path)
-        manifest_file = plugin_dir / "plugin.yaml"
-        if not manifest_file.exists():
-            manifest_file = plugin_dir / "plugin.yml"
-        if not manifest_file.exists():
-            return []
-        data = yaml.safe_load(manifest_file.read_text(encoding="utf-8")) or {}
-        for key in keys:
-            value = data.get(key)
-            if isinstance(value, list):
-                return value
-        return []
-    except Exception as exc:
-        warnings.append(f"manifest metadata at {plugin_path}: {exc}")
-        return []
-
-
-def manifest_list(manifest, attr, *manifest_keys):
-    value = coerce_list(getattr(manifest, attr, []))
-    if value:
-        return value
-    return read_manifest_list(getattr(manifest, "path", ""), *manifest_keys)
-
-
-def read_config_file(home):
-    if not home:
-        return {}
-    try:
-        import yaml
-        path = Path(home) / "config.yaml"
-        if not path.exists():
-            return {}
-        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except Exception as exc:
-        warnings.append(f"plugin config at {home}: {exc}")
-        return {}
-
-
-def config_plugins_list(config, key):
-    plugins = config.get("plugins")
-    if not isinstance(plugins, dict):
-        return None
-    value = plugins.get(key)
-    return set(value) if isinstance(value, list) else None
-
-
-def merged_plugin_config():
-    homes = []
-    for home in (
-        os.environ.get("HERMES_AGENT_BASE_HOME", ""),
-        os.environ.get("HERMES_HOME", ""),
-        str(get_hermes_home()),
-    ):
-        if home and home not in homes:
-            homes.append(home)
-
-    disabled = set()
-    enabled = set()
-    saw_enabled_key = False
-    for home in homes:
-        config = read_config_file(home)
-        enabled_value = config_plugins_list(config, "enabled")
-        if enabled_value is not None:
-            saw_enabled_key = True
-            enabled.update(enabled_value)
-            disabled.difference_update(enabled_value)
-        disabled_value = config_plugins_list(config, "disabled")
-        if disabled_value is not None:
-            disabled.update(disabled_value)
-            enabled.difference_update(disabled_value)
-    return disabled, (enabled if saw_enabled_key else None)
-
-manager = PluginManager()
-manifests = []
-
-bundled_root = get_bundled_plugins_dir()
-manifests.extend(safe_scan(
-    f"bundled plugins at {bundled_root}",
-    lambda: manager._scan_directory(
-        bundled_root,
-        source="bundled",
-        skip_names={"platforms"},
-    ),
-))
-manifests.extend(safe_scan(
-    f"bundled platform plugins at {bundled_root / 'platforms'}",
-    lambda: manager._scan_directory(bundled_root / "platforms", source="bundled"),
-))
-
-user_dir = get_hermes_home() / "plugins"
-manifests.extend(safe_scan(
-    f"user plugins at {user_dir}",
-    lambda: manager._scan_directory(user_dir, source="user"),
-))
-
-project_plugins_enabled = env_enabled("HERMES_ENABLE_PROJECT_PLUGINS")
-if project_plugins_enabled:
-    project_dir = Path.cwd() / ".hermes" / "plugins"
-    manifests.extend(safe_scan(
-        f"project plugins at {project_dir}",
-        lambda: manager._scan_directory(project_dir, source="project"),
-    ))
-
-manifests.extend(safe_scan(
-    "pip entry-point plugins",
-    lambda: manager._scan_entry_points(),
-))
-
-winners = {}
-for manifest in manifests:
-    key = manifest.key or manifest.name
-    winners[key] = manifest
-
-disabled, enabled = merged_plugin_config()
-enabled_set = enabled if enabled is not None else set()
-
-plugins = []
-for key, manifest in sorted(winners.items(), key=lambda item: item[0].lower()):
-    disabled_match = key in disabled or manifest.name in disabled
-    enabled_match = key in enabled_set or manifest.name in enabled_set
-
-    if disabled_match:
-        config_status = "disabled"
-        effective_status = "disabled"
-    elif manifest.kind == "exclusive":
-        config_status = "provider-managed"
-        effective_status = "provider-managed"
-    elif manifest.kind == "model-provider":
-        config_status = "provider-managed"
-        effective_status = "provider-managed"
-    elif manifest.source == "bundled" and manifest.kind in ("backend", "platform"):
-        config_status = "auto"
-        effective_status = "auto-active"
-    elif enabled_match:
-        config_status = "enabled"
-        effective_status = "enabled"
-    else:
-        config_status = "not-enabled"
-        effective_status = "inactive"
-
-    plugins.append({
-        "key": key,
-        "name": manifest.name,
-        "kind": manifest.kind,
-        "source": manifest.source,
-        "configStatus": config_status,
-        "effectiveStatus": effective_status,
-        "version": manifest.version or "",
-        "description": manifest.description or "",
-        "author": manifest.author or "",
-        "path": manifest.path or "",
-        "providesTools": manifest_list(manifest, "provides_tools", "provides_tools", "tools"),
-        "providesHooks": manifest_list(manifest, "provides_hooks", "provides_hooks", "hooks"),
-        "requiresEnv": manifest_list(manifest, "requires_env", "requires_env"),
+  } catch (err) {
+    warnings.push(`hermes plugins list --json: ${extractError(err)}`)
+    return []
+  }
+  let rows: unknown
+  try {
+    rows = JSON.parse(stdout)
+  } catch (exc) {
+    warnings.push(`hermes plugins list --json output was not JSON: ${exc}`)
+    return []
+  }
+  if (!Array.isArray(rows)) {
+    warnings.push('hermes plugins list --json output was not a JSON array')
+    return []
+  }
+  const manifests: ScannedManifest[] = []
+  for (const row of rows) {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) continue
+    const entry = row as Record<string, unknown>
+    // Directory plugins are enumerated natively above; only pip entry-point
+    // plugins (invisible to filesystem scans) are taken from the CLI.
+    if (entry.source !== 'entrypoint') continue
+    const name = typeof entry.name === 'string' ? entry.name : ''
+    if (!name) continue
+    if (entry.removed) {
+      warnings.push(`plugin ${name}: ${String(entry.removed)}`)
+    }
+    manifests.push({
+      key: name,
+      name,
+      kind: 'standalone',
+      source: 'entrypoint',
+      version: entry.version === undefined || entry.version === null ? '' : String(entry.version),
+      description: typeof entry.description === 'string' ? entry.description : '',
+      author: '',
+      path: '',
+      providesTools: [],
+      providesHooks: [],
+      requiresEnv: [],
     })
-
-print(json.dumps({
-    "plugins": plugins,
-    "warnings": warnings,
-    "metadata": {
-        "hermesAgentRoot": os.environ.get("HERMES_AGENT_ROOT_RESOLVED", ""),
-        "pythonExecutable": sys.executable,
-        "cwd": str(Path.cwd()),
-        "projectPluginsEnabled": project_plugins_enabled,
-    },
-}))
-`
-
-function extractError(err: any): string {
-  const stdout = typeof err?.stdout === 'string' ? err.stdout.trim() : ''
-  const stderr = typeof err?.stderr === 'string' ? err.stderr.trim() : ''
-  return [err?.message, stdout, stderr].filter(Boolean).join('\n')
+  }
+  return manifests
 }
 
 export async function listHermesPlugins(profile?: string): Promise<HermesPluginsResponse> {
@@ -279,51 +306,80 @@ export async function listHermesPlugins(profile?: string): Promise<HermesPlugins
   const agentRoot = command.agentRoot || ''
   const hermesHome = profile ? getProfileDir(profile) : getActiveProfileDir()
   const hermesBaseHome = getHermesBaseDir()
-  const env: NodeJS.ProcessEnv = {
-    ...process.env,
-    HERMES_AGENT_ROOT_RESOLVED: agentRoot,
-    HERMES_AGENT_BASE_HOME: hermesBaseHome,
-    HERMES_HOME: hermesHome,
-  }
-  if (!agentRoot) {
-    delete env.PYTHONHOME
-    delete env.PYTHONPATH
-  }
-  const pythonArgs = [
-    ...command.argsPrefix,
-    ...(agentRoot ? ['-I'] : []),
-    '-c',
-    PYTHON_BRIDGE,
+  const warnings: string[] = []
+  const projectPluginsEnabled = envEnabled('HERMES_ENABLE_PROJECT_PLUGINS')
+
+  const bundledRoot = process.env.HERMES_BUNDLED_PLUGINS?.trim() || (agentRoot ? join(agentRoot, 'plugins') : '')
+  const manifests: ScannedManifest[] = [
+    ...scanDirectory(bundledRoot, 'bundled', new Set(['platforms']), warnings),
+    ...scanDirectory(bundledRoot ? join(bundledRoot, 'platforms') : '', 'bundled', new Set(), warnings),
+    ...scanDirectory(join(hermesHome, 'plugins'), 'user', new Set(), warnings),
+    ...(projectPluginsEnabled
+      ? scanDirectory(join(process.cwd(), '.hermes', 'plugins'), 'project', new Set(), warnings)
+      : []),
   ]
-  const displayArgs = [
-    ...command.argsPrefix,
-    ...(agentRoot ? ['-I'] : []),
-    '-c',
-    '<plugin-discovery>',
-  ].join(' ')
+  manifests.push(...await entrypointManifests(hermesHome, warnings))
 
-  const errors: string[] = []
-  try {
-    const { stdout, stderr } = await execFileAsync(command.command, pythonArgs, {
-      cwd: process.cwd(),
-      env,
-      windowsHide: true,
-      timeout: 15000,
-      maxBuffer: 10 * 1024 * 1024,
-    })
-    const parsed = JSON.parse(stdout) as HermesPluginsResponse & { error?: string; detail?: string }
-    if ((parsed as any).error) {
-      throw new Error(`${(parsed as any).error}: ${(parsed as any).detail || 'unknown error'}`)
-    }
-    if (stderr?.trim()) {
-      parsed.warnings = [...(parsed.warnings || []), stderr.trim()]
-    }
-    return parsed
-  } catch (err: any) {
-    errors.push(`${command.command} ${displayArgs}: ${extractError(err)}`)
+  const winners = new Map<string, ScannedManifest>()
+  for (const manifest of manifests) {
+    winners.set(manifest.key || manifest.name, manifest)
   }
 
-  throw new Error(`Failed to discover Hermes plugins.\n${errors.join('\n')}`)
+  const { disabled, enabled } = mergedPluginConfig(hermesBaseHome, hermesHome, warnings)
+  const enabledSet = enabled ?? new Set<string>()
+
+  const plugins: HermesPluginInfo[] = Array.from(winners.entries())
+    .sort(([left], [right]) => left.toLowerCase().localeCompare(right.toLowerCase()))
+    .map(([key, manifest]) => {
+      const disabledMatch = disabled.has(key) || disabled.has(manifest.name)
+      const enabledMatch = enabledSet.has(key) || enabledSet.has(manifest.name)
+
+      let configStatus: HermesPluginConfigStatus
+      let effectiveStatus: HermesPluginEffectiveStatus
+      if (disabledMatch) {
+        configStatus = 'disabled'
+        effectiveStatus = 'disabled'
+      } else if (manifest.kind === 'exclusive' || manifest.kind === 'model-provider') {
+        configStatus = 'provider-managed'
+        effectiveStatus = 'provider-managed'
+      } else if (manifest.source === 'bundled' && (manifest.kind === 'backend' || manifest.kind === 'platform')) {
+        configStatus = 'auto'
+        effectiveStatus = 'auto-active'
+      } else if (enabledMatch) {
+        configStatus = 'enabled'
+        effectiveStatus = 'enabled'
+      } else {
+        configStatus = 'not-enabled'
+        effectiveStatus = 'inactive'
+      }
+
+      return {
+        key,
+        name: manifest.name,
+        kind: manifest.kind,
+        source: manifest.source,
+        configStatus,
+        effectiveStatus,
+        version: manifest.version,
+        description: manifest.description,
+        author: manifest.author,
+        path: manifest.path,
+        providesTools: manifest.providesTools,
+        providesHooks: manifest.providesHooks,
+        requiresEnv: manifest.requiresEnv,
+      }
+    })
+
+  return {
+    plugins,
+    warnings,
+    metadata: {
+      hermesAgentRoot: agentRoot,
+      pythonExecutable: command.command,
+      cwd: process.cwd(),
+      projectPluginsEnabled,
+    },
+  }
 }
 
 function configPathForProfile(profile?: string): string {

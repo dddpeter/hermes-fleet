@@ -271,7 +271,11 @@ class BridgeServer:
 
     def _shutdown_all_mcp_servers(self) -> int:
         try:
-            from tools.mcp_tool import _run_on_mcp_loop, _servers, _lock
+            from tools.mcp_tool import _servers, _lock
+            from hermes_compat import import_attr
+
+            # Moved to tools.mcp_tool_loop in the Sep 2026 Hermes decomposition.
+            _run_on_mcp_loop = import_attr("tools.mcp_tool_loop", "_run_on_mcp_loop", "tools.mcp_tool")
         except ImportError:
             return 0
         with _lock:
@@ -281,7 +285,12 @@ class BridgeServer:
     def _handle_mcp_action(self, action: str, req: dict[str, Any], profile: str | None = None) -> dict[str, Any]:
         """Handle MCP management actions in worker process."""
         try:
-            from tools.mcp_tool import discover_mcp_tools, register_mcp_servers, _run_on_mcp_loop, _servers, _lock
+            from tools.mcp_tool import _servers, _lock
+            from hermes_compat import import_attr
+
+            _run_on_mcp_loop = import_attr("tools.mcp_tool_loop", "_run_on_mcp_loop", "tools.mcp_tool")
+            discover_mcp_tools = import_attr("tools.mcp_tool_discovery", "discover_mcp_tools", "tools.mcp_tool")
+            register_mcp_servers = import_attr("tools.mcp_tool_discovery", "register_mcp_servers", "tools.mcp_tool")
         except ImportError:
             return {"error": "MCP tool module not available", "ok": False}
 

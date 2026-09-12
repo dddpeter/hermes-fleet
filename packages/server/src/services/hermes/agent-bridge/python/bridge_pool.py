@@ -1187,8 +1187,12 @@ class AgentPool:
                 except Exception:
                     self._run_context.session_id = session.session_id
                 try:
-                    from tools.approval import register_gateway_notify, set_current_session_key
+                    from tools.approval import register_gateway_notify
+                    from hermes_compat import import_attr
 
+                    # Moved to tools.approval_context in the Sep 2026 Hermes
+                    # decomposition; the old path warns and disappears 2026-09-14.
+                    set_current_session_key = import_attr("tools.approval_context", "set_current_session_key", "tools.approval")
                     approval_session_token = set_current_session_key(session.session_id)
                     register_gateway_notify(session.session_id, self._gateway_approval_notify(session.session_id))
                     registered_gateway_approval_session = session.session_id
@@ -1336,8 +1340,10 @@ class AgentPool:
                     pass
                 if approval_session_token is not None:
                     try:
-                        from tools.approval import reset_current_session_key, unregister_gateway_notify
+                        from tools.approval import unregister_gateway_notify
+                        from hermes_compat import import_attr
 
+                        reset_current_session_key = import_attr("tools.approval_context", "reset_current_session_key", "tools.approval")
                         if registered_gateway_approval_session is not None:
                             unregister_gateway_notify(registered_gateway_approval_session)
                         reset_current_session_key(approval_session_token)

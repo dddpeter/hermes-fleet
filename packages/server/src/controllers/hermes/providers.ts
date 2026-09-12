@@ -99,6 +99,64 @@ function findProviderDictKey(config: any, poolKey: string, requestedProviderKey 
   return ''
 }
 
+function isProviderDict(config: any): boolean {
+  return !!config.providers && typeof config.providers === 'object' && !Array.isArray(config.providers)
+}
+
+/**
+ * Custom providers are stored in the profile's config.yaml in one of two
+ * shapes: the legacy `custom_providers:` list or the v12+ `providers:` dict.
+ * hermes-agent 0.21 reads both and deduplicates, so the same entry must never
+ * land in both forms. Writes follow the shape the file already uses: a
+ * v12-migrated profile keeps the dict, a legacy profile keeps the list (old
+ * agent installs ignore the dict form entirely).
+ */
+function upsertCustomProviderEntry(
+  config: any,
+  poolKey: string,
+  entryName: string,
+  fields: { base_url: string; api_key: string; model: string; api_mode?: ProviderApiMode; context_length?: number },
+): void {
+  const preset = PROVIDER_PRESETS.find(p => p.value === poolKey)
+    || PROVIDER_PRESETS.find(p => p.value === poolKey.replace('custom:', ''))
+  const apiMode = preset?.api_mode || fields.api_mode
+
+  const applyFields = (entry: any) => {
+    entry.base_url = fields.base_url
+    entry.api_key = fields.api_key
+    entry.model = fields.model
+    if (apiMode) entry.api_mode = apiMode
+    if (fields.context_length && fields.context_length > 0) {
+      entry.models = entry.models && typeof entry.models === 'object' ? entry.models : {}
+      entry.models[fields.model] = entry.models[fields.model] && typeof entry.models[fields.model] === 'object'
+        ? entry.models[fields.model]
+        : {}
+      entry.models[fields.model].context_length = fields.context_length
+    }
+  }
+
+  if (isProviderDict(config)) {
+    const dict = config.providers as Record<string, any>
+    const key = findProviderDictKey(config, poolKey) || poolKey.replace('custom:', '')
+    const existing = dict[key]
+    if (existing && typeof existing === 'object' && !Array.isArray(existing)) {
+      applyFields(existing)
+    } else {
+      dict[key] = buildProviderEntry(entryName, fields.base_url, fields.api_key, fields.model, fields.context_length, apiMode)
+    }
+    return
+  }
+
+  if (!Array.isArray(config.custom_providers)) { config.custom_providers = [] }
+  const list = config.custom_providers as any[]
+  const existing = list.find((e: any) => providerKeyForCustomName(e?.name) === poolKey)
+  if (existing) {
+    applyFields(existing)
+  } else {
+    list.push(buildProviderEntry(entryName, fields.base_url, fields.api_key, fields.model, fields.context_length, apiMode))
+  }
+}
+
 export async function create(ctx: any) {
   const { name, base_url, api_key, model, context_length, providerKey, api_mode } = ctx.request.body as {
     name: string; base_url: string; api_key: string; model: string; context_length?: number; providerKey?: string | null; api_mode?: ProviderApiMode
@@ -119,28 +177,13 @@ export async function create(ctx: any) {
     await updateConfigYamlForProfile(profile, async (config) => {
       if (typeof config.model !== 'object' || config.model === null) { config.model = {} }
       if (!isBuiltin) {
-        if (!Array.isArray(config.custom_providers)) { config.custom_providers = [] }
-        const existing = (config.custom_providers as any[]).find(
-          (e: any) => `custom:${e.name}` === poolKey
-        )
-        if (existing) {
-          existing.base_url = effectiveBaseUrl
-          existing.api_key = api_key
-          existing.model = model
-          const preset = PROVIDER_PRESETS.find(p => p.value === poolKey.replace('custom:', ''))
-          if (preset?.api_mode) existing.api_mode = preset.api_mode
-          else if (customApiMode) existing.api_mode = customApiMode
-          if (context_length && context_length > 0) {
-            if (!existing.models) existing.models = {}
-            existing.models[model] = existing.models[model] || {}
-            existing.models[model].context_length = context_length
-          }
-        } else {
-          const entry = buildProviderEntry(normalizedName.toLowerCase().replace(/ /g, '-'), effectiveBaseUrl, api_key, model, context_length, customApiMode)
-          const preset = PROVIDER_PRESETS.find(p => p.value === poolKey.replace('custom:', ''))
-          if (preset?.api_mode) entry.api_mode = preset.api_mode
-          config.custom_providers.push(entry)
-        }
+        upsertCustomProviderEntry(config, poolKey, normalizedName.toLowerCase().replace(/ /g, '-'), {
+          base_url: effectiveBaseUrl,
+          api_key,
+          model,
+          api_mode: customApiMode,
+          context_length,
+        })
         config.model.default = model
         config.model.provider = poolKey
       } else {
@@ -154,28 +197,13 @@ export async function create(ctx: any) {
           config.model.default = model
           config.model.provider = poolKey
         } else {
-          if (!Array.isArray(config.custom_providers)) { config.custom_providers = [] }
-          const existing = (config.custom_providers as any[]).find(
-            (e: any) => `custom:${e.name}` === `custom:${poolKey}`
-          )
-          if (existing) {
-            existing.base_url = effectiveBaseUrl
-            existing.api_key = api_key
-            existing.model = model
-            const preset = PROVIDER_PRESETS.find(p => p.value === poolKey)
-            if (preset?.api_mode) existing.api_mode = preset.api_mode
-            else if (customApiMode) existing.api_mode = customApiMode
-            if (context_length && context_length > 0) {
-              if (!existing.models) existing.models = {}
-              existing.models[model] = existing.models[model] || {}
-              existing.models[model].context_length = context_length
-            }
-          } else {
-            const entry = buildProviderEntry(poolKey, effectiveBaseUrl, api_key, model, context_length, customApiMode)
-            const preset = PROVIDER_PRESETS.find(p => p.value === poolKey)
-            if (preset?.api_mode) entry.api_mode = preset.api_mode
-            config.custom_providers.push(entry)
-          }
+          upsertCustomProviderEntry(config, poolKey, poolKey, {
+            base_url: effectiveBaseUrl,
+            api_key,
+            model,
+            api_mode: customApiMode,
+            context_length,
+          })
           config.model.default = model
           config.model.provider = `custom:${poolKey}`
         }
@@ -203,10 +231,16 @@ export async function update(ctx: any) {
     const isCustom = poolKey.startsWith('custom:')
     if (isCustom) {
       const found = await updateConfigYamlForProfile(profile, (config) => {
-        if (!Array.isArray(config.custom_providers)) return { data: config, result: false, write: false }
-        const entry = (config.custom_providers as any[]).find((e: any) => {
-          return `custom:${e.name.trim().toLowerCase().replace(/ /g, '-')}` === poolKey
-        })
+        let entry: any = null
+        if (Array.isArray(config.custom_providers)) {
+          entry = (config.custom_providers as any[]).find((e: any) => {
+            return `custom:${e.name.trim().toLowerCase().replace(/ /g, '-')}` === poolKey
+          }) || null
+        }
+        if (!entry && isProviderDict(config)) {
+          const dictKey = findProviderDictKey(config, poolKey)
+          if (dictKey) entry = config.providers[dictKey]
+        }
         if (!entry) return { data: config, result: false, write: false }
         if (name !== undefined) entry.name = name
         if (base_url !== undefined) entry.base_url = base_url

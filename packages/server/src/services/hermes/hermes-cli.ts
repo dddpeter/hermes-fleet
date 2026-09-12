@@ -1,13 +1,13 @@
 import { execFile, spawn } from 'child_process'
-import { existsSync, readFileSync, unlinkSync } from 'fs'
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { promisify } from 'util'
+import { homedir } from 'os'
 import YAML from 'js-yaml'
 import { logger } from '../logger'
 import { getActiveProfileDir, getActiveProfileName, getProfileDir, listProfileNamesFromDisk } from './hermes-profile'
 import { startGatewayRunManaged } from './gateway-runner'
-import { isGatewayRunningForProfile } from './gateway-autostart'
-import { parseProfileListRuntimeInfo, type ProfileListRuntimeInfo } from './profile-list-parser'
+import { isGatewayRunningForProfile, isGatewayRunningForProfileDir } from './gateway-autostart'
 import { execHermesWithBin, spawnHermesWithBin } from './hermes-process'
 
 const execFileAsync = promisify(execFile)
@@ -225,7 +225,9 @@ function parseSessionExport(stdout: string): HermesSessionFull[] {
       const raw: HermesSessionFull = JSON.parse(line)
       sessions.push(raw)
     } catch {
-      // Skip non-JSON lines such as "Session 'x' not found."
+      // No longer silent: an unparseable line (CLI banner, localized error,
+      // format change) must be observable or a format change goes unnoticed.
+      logger.warn({ line: line.slice(0, 200) }, 'Hermes CLI: sessions export produced a non-JSON line; skipped')
     }
   }
   return sessions
@@ -403,10 +405,18 @@ export interface LogFileInfo {
 /**
  * Get Hermes version
  */
+const HERMES_AGENT_VERSION_TTL_MS = 5 * 60 * 1000
+let cachedHermesAgentVersion: { value: string; at: number } | null = null
+
 export async function getVersion(): Promise<string> {
+  if (cachedHermesAgentVersion && Date.now() - cachedHermesAgentVersion.at < HERMES_AGENT_VERSION_TTL_MS) {
+    return cachedHermesAgentVersion.value
+  }
   try {
     const { stdout } = await execHermesWithBin(HERMES_BIN, ['--version'], { timeout: 5000, ...execOpts })
-    return stdout.trim()
+    const value = stdout.trim()
+    cachedHermesAgentVersion = { value, at: Date.now() }
+    return value
   } catch {
     return ''
   }
@@ -488,34 +498,54 @@ export async function stopGateway(): Promise<string> {
 }
 
 /**
- * List available log files
+ * List available log files.
+ *
+ * Log files live at `<HERMES_HOME>/logs/*.log` (agent.log, errors.log,
+ * gateway.log, gui.log, …) — enumerate the directory directly instead of
+ * parsing `hermes logs list` output, which was both localized-text fragile
+ * and hard-coded to a fixed log-name whitelist.
  */
 export async function listLogFiles(): Promise<LogFileInfo[]> {
+  const logsDir = join(getActiveProfileDir(), 'logs')
+  if (!existsSync(logsDir)) return []
+  let entries
   try {
-    const { stdout } = await execHermesWithBin(HERMES_BIN, ['logs', 'list'], {
-      timeout: 10000,
-      ...execOpts,
-    })
-    const files: LogFileInfo[] = []
-    // Windows 可能使用 \r\n 换行符，统一处理
-    const normalized = stdout.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-    const lines = normalized.trim().split('\n').filter(l => l.includes('.log'))
-    for (const line of lines) {
-      const match = line.match(/^\s+(\S+)\s+([\d.]+\w+)\s+(.+)$/)
-      if (match) {
-        const rawName = match[1]
-        const name = rawName.replace(/\.log$/, '')
-        // 支持更多日志类型：agent, errors, gateway, 以及其他可能的日志文件
-        if (['agent', 'errors', 'gateway', 'error'].includes(name)) {
-          files.push({ name, size: match[2], modified: match[3].trim() })
-        }
-      }
-    }
-    return files
-  } catch (err: any) {
-    logger.error(err, 'Hermes CLI: logs list failed')
+    entries = readdirSync(logsDir, { withFileTypes: true })
+  } catch (err) {
+    logger.warn(err, 'Hermes CLI: failed to read logs directory %s', logsDir)
     return []
   }
+
+  const files: LogFileInfo[] = []
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith('.log')) continue
+    // Rotated backups (agent.log.1, agent.log.2.gz, …) never end in `.log`;
+    // the UI reads live logs by name via `hermes logs <name>`.
+    try {
+      const stat = statSync(join(logsDir, entry.name))
+      files.push({
+        name: entry.name.replace(/\.log$/, ''),
+        size: formatLogSize(stat.size),
+        modified: stat.mtime.toISOString(),
+      })
+    } catch (err) {
+      logger.warn(err, 'Hermes CLI: failed to stat log file %s', entry.name)
+    }
+  }
+  return files.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+function formatLogSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`
+  const units = ['KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unit = ''
+  for (const next of units) {
+    value /= 1024
+    unit = next
+    if (value < 1024) break
+  }
+  return `${value >= 100 ? Math.round(value) : value.toFixed(1)}${unit}`
 }
 
 /**
@@ -566,20 +596,106 @@ export interface HermesProfileDetail {
   hasSoulMd: boolean
 }
 
-function readProfileDefaultModel(name: string): string {
-  const configPath = join(getProfileDir(name), 'config.yaml')
-  if (!existsSync(configPath)) return '—'
+function readProfileModelAndProvider(profileDir: string): { model: string; provider: string } {
+  const configPath = join(profileDir, 'config.yaml')
+  if (!existsSync(configPath)) return { model: '—', provider: '' }
   try {
     const config = YAML.load(readFileSync(configPath, 'utf-8'), { json: true }) as Record<string, any> | null
     const model = config?.model
-    if (typeof model === 'string') return model.trim() || '—'
+    if (typeof model === 'string') return { model: model.trim() || '—', provider: '' }
     if (model && typeof model === 'object') {
-      return String(model.default || '').trim() || '—'
+      return {
+        model: String(model.default || model.model || '').trim() || '—',
+        provider: String(model.provider || '').trim(),
+      }
     }
   } catch (err) {
-    logger.warn(err, 'Hermes CLI: failed to read profile config model for %s', name)
+    logger.warn(err, 'Hermes CLI: failed to read profile config model for %s', profileDir)
   }
-  return '—'
+  return { model: '—', provider: '' }
+}
+
+// Mirrors hermes-agent's ProfileInfo (hermes_cli/profiles.py): profile facts
+// are derived from the profile directory itself instead of parsing
+// `hermes profile list/show` stdout.
+const EXCLUDED_SKILL_DIRS = new Set([
+  '.git', '.github', '.hub', '.archive', '.curator_backups',
+  '.venv', 'venv', 'node_modules', 'site-packages', '__pycache__',
+  '.tox', '.nox', '.pytest_cache', '.mypy_cache', '.ruff_cache',
+])
+const SKILL_SUPPORT_DIRS = new Set(['references', 'templates', 'assets', 'scripts'])
+
+function countProfileSkills(profileDir: string): number {
+  const skillsDir = join(profileDir, 'skills')
+  if (!existsSync(skillsDir)) return 0
+  const skillRootDirs = new Set<string>()
+  const stack: string[] = [skillsDir]
+  let count = 0
+  while (stack.length > 0) {
+    const current = stack.pop()!
+    let entries
+    try {
+      entries = readdirSync(current, { withFileTypes: true })
+    } catch {
+      continue
+    }
+    const hasOwnSkillMd = entries.some(entry => entry.isFile() && entry.name === 'SKILL.md')
+    if (hasOwnSkillMd) {
+      count += 1
+      skillRootDirs.add(current)
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      if (EXCLUDED_SKILL_DIRS.has(entry.name)) continue
+      // Support dirs (references/templates/assets/scripts) directly inside a
+      // skill package are loaded explicitly, never scanned as skills.
+      if (SKILL_SUPPORT_DIRS.has(entry.name) && skillRootDirs.has(current)) continue
+      stack.push(join(current, entry.name))
+    }
+  }
+  return count
+}
+
+function readProfileAliasMap(): Map<string, string> {
+  // Hermes wrapper scripts live in ~/.local/bin (`<alias>` on POSIX,
+  // `<alias>.bat` on Windows) and contain `hermes -p <profile>`.
+  const wrapperDir = join(homedir(), '.local', 'bin')
+  const result = new Map<string, string>()
+  let entries
+  try {
+    entries = readdirSync(wrapperDir, { withFileTypes: true })
+  } catch {
+    return result
+  }
+  const isWindows = process.platform === 'win32'
+  for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+    if (!entry.isFile()) continue
+    if (isWindows) {
+      if (!entry.name.toLowerCase().endsWith('.bat')) continue
+    } else if (entry.name.includes('.')) {
+      continue
+    }
+    let content: string
+    try {
+      const stat = statSync(join(wrapperDir, entry.name))
+      if (stat.size > 8192) continue
+      content = readFileSync(join(wrapperDir, entry.name), 'utf-8')
+    } catch {
+      continue
+    }
+    const marker = 'hermes -p '
+    const idx = content.indexOf(marker)
+    if (idx === -1) continue
+    const canon = content.slice(idx + marker.length).trim().split(/\s+/)[0]
+    if (!canon) continue
+    const alias = isWindows ? entry.name.slice(0, -4) : entry.name
+    if (alias === canon) {
+      if (!result.has(canon)) result.set(canon, alias)
+    } else {
+      result.set(canon, alias)
+    }
+  }
+  return result
 }
 
 /**
@@ -588,67 +704,41 @@ function readProfileDefaultModel(name: string): string {
 export async function listProfiles(): Promise<HermesProfile[]> {
   const profileNames = listProfileNamesFromDisk()
   const activeProfileName = getActiveProfileName()
-  let runtimeInfo = new Map<string, ProfileListRuntimeInfo>()
-  try {
-    const { stdout } = await execHermesWithBin(HERMES_BIN, ['profile', 'list'], {
-      timeout: 10000,
-      ...execOpts,
-    })
-    runtimeInfo = parseProfileListRuntimeInfo(stdout, profileNames)
-  } catch (err: any) {
-    logger.warn(err, 'Hermes CLI: profile list failed; falling back to disk profile list')
-  }
+  const aliasMap = readProfileAliasMap()
 
-  return profileNames.map(name => {
-    const runtime = runtimeInfo.get(name)
-    const gatewayStatus = runtime?.gatewayStatus
+  return Promise.all(profileNames.map(async name => {
+    const profileDir = getProfileDir(name)
+    const { model } = readProfileModelAndProvider(profileDir)
+    const running = await isGatewayRunningForProfileDir(profileDir)
     return {
       name,
-      active: runtime?.active ?? name === activeProfileName,
-      model: readProfileDefaultModel(name),
-      gatewayStatus: gatewayStatus && gatewayStatus !== '—' && gatewayStatus !== '-' ? gatewayStatus : undefined,
-      alias: runtime?.alias || '',
+      active: name === activeProfileName,
+      model,
+      gatewayStatus: running ? 'running' : 'stopped',
+      alias: name === 'default' ? '' : (aliasMap.get(name) || ''),
     }
-  })
+  }))
 }
 
 /**
  * Get profile details
  */
 export async function getProfile(name: string): Promise<HermesProfileDetail> {
-  try {
-    const { stdout } = await execHermesWithBin(HERMES_BIN, ['profile', 'show', name], {
-      timeout: 10000,
-      ...execOpts,
-    })
+  const profileDir = getProfileDir(name)
+  if (!existsSync(profileDir)) {
+    throw new Error(`Profile "${name}" not found`)
+  }
 
-    const result: Record<string, string> = {}
-    for (const line of stdout.trim().split('\n')) {
-      const match = line.match(/^([^\s:]+):\s+(.+)$/)
-      if (match) {
-        result[match[1].trim().toLowerCase().replace(/\s+/g, '_')] = match[2].trim()
-      }
-    }
+  const { model, provider } = readProfileModelAndProvider(profileDir)
 
-    const modelFull = result.model || ''
-    const providerMatch = modelFull.match(/\((.+)\)/)
-    const model = providerMatch ? modelFull.replace(/\s*\(.+\)/, '').trim() : modelFull
-
-    return {
-      name: result.profile || name,
-      path: result.path || '',
-      model,
-      provider: providerMatch ? providerMatch[1] : '',
-      skills: parseInt(result.skills || '0', 10),
-      hasEnv: result['.env'] === 'exists',
-      hasSoulMd: result['soul.md'] === 'exists',
-    }
-  } catch (err: any) {
-    if (err.code === 1 || err.status === 1) {
-      throw new Error(`Profile "${name}" not found`)
-    }
-    logger.error(err, 'Hermes CLI: profile show failed')
-    throw new Error(`Failed to get profile: ${err.message}`)
+  return {
+    name,
+    path: profileDir,
+    model,
+    provider,
+    skills: countProfileSkills(profileDir),
+    hasEnv: existsSync(join(profileDir, '.env')),
+    hasSoulMd: existsSync(join(profileDir, 'SOUL.md')),
   }
 }
 
