@@ -116,58 +116,6 @@ describe('health controller version metadata', () => {
     expect(ctx.body.webui_version).toBe('9.9.9-test')
   })
 
-  it('checks npm latest using the root package name', async () => {
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    const pkg = readRootPackage()
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ version: '99.99.99' }),
-    })
-    vi.stubGlobal('fetch', fetchMock)
-
-    const { checkLatestVersion, healthCheck } = await loadHealthControllerWithoutInjectedVersion()
-
-    await checkLatestVersion()
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      `https://registry.npmjs.org/${pkg.name}/latest`,
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
-    )
-
-    const ctx = createMockCtx()
-    await healthCheck(ctx)
-
-    expect(ctx.body.webui_latest).toBe('99.99.99')
-    expect(ctx.body.webui_update_available).toBe(true)
-  })
-
-  it('does not report a registry version lower than the local build as an update', async () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ version: '0.6.17' }),
-    }))
-
-    const { checkLatestVersion, healthCheck } = await loadHealthControllerWithInjectedVersion('0.6.18')
-
-    await checkLatestVersion()
-
-    const ctx = createMockCtx()
-    await healthCheck(ctx)
-
-    expect(ctx.body.webui_latest).toBe('0.6.17')
-    expect(ctx.body.webui_update_available).toBe(false)
-    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Update available'))
-  })
-
-  it('does not throw when latest-version lookup fails', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')))
-
-    const { checkLatestVersion } = await loadHealthControllerWithoutInjectedVersion()
-
-    await expect(checkLatestVersion()).resolves.toBeUndefined()
-  })
-
   it('includes sanitized agent bridge readiness fields without leaking the endpoint path', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }))
 

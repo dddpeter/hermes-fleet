@@ -6,8 +6,6 @@ export interface HealthResponse {
   version?: string
   gateway?: string
   webui_version?: string
-  webui_latest?: string
-  webui_update_available?: boolean
   node_version?: string
   agent_bridge?: {
     status: string
@@ -137,10 +135,6 @@ export interface CustomProvider {
 
 export async function checkHealth(): Promise<HealthResponse> {
   return request<HealthResponse>('/health')
-}
-
-export async function triggerUpdate(): Promise<{ success: boolean; message: string }> {
-  return request<{ success: boolean; message: string }>('/api/hermes/update', { method: 'POST' })
 }
 
 export async function fetchPreviewStatus(): Promise<PreviewStatus> {

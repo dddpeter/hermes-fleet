@@ -45,7 +45,6 @@ const LOCAL_VERSION = typeof __APP_VERSION__ !== 'undefined'
   ? __APP_VERSION__
   : PACKAGE_INFO?.version || ''
 
-let cachedLatestVersion = ''
 const AGENT_BRIDGE_HEALTH_CACHE_TTL_MS = 250
 const AGENT_BRIDGE_HEALTH_FIRST_WAIT_MS = 75
 
@@ -66,63 +65,6 @@ type AgentBridgeHealthPayload = {
 
 let cachedAgentBridgeHealth: { value: AgentBridgeHealthPayload; expiresAt: number } | null = null
 let pendingAgentBridgeHealthRefresh: Promise<AgentBridgeHealthPayload> | null = null
-
-/**
- * Whether the periodic npm-registry version check is disabled.
- *
- * Useful when hermes-web-ui is bundled inside a packaged distribution
- * (e.g. a desktop app) where the user can't `npm install -g hermes-web-ui@latest`
- * to upgrade — the "update available" prompt would be misleading and
- * the periodic outbound HTTP request to the npm registry is unnecessary.
- *
- * Set HERMES_WEB_UI_DISABLE_UPDATE_CHECK=true (or 1, on, yes) to disable.
- */
-function isUpdateCheckDisabled(): boolean {
-  const raw = (process.env.HERMES_WEB_UI_DISABLE_UPDATE_CHECK || '').trim().toLowerCase()
-  return raw === 'true' || raw === '1' || raw === 'on' || raw === 'yes'
-}
-
-function compareVersions(left: string, right: string): number {
-  const normalize = (value: string) => value.trim().replace(/^v/i, '').split(/[.-]/)
-  const leftParts = normalize(left)
-  const rightParts = normalize(right)
-  for (let index = 0; index < Math.max(leftParts.length, rightParts.length); index += 1) {
-    const leftPart = leftParts[index] || '0'
-    const rightPart = rightParts[index] || '0'
-    const leftNumber = Number.parseInt(leftPart, 10)
-    const rightNumber = Number.parseInt(rightPart, 10)
-    const numeric = Number.isFinite(leftNumber) && Number.isFinite(rightNumber)
-    const diff = numeric ? leftNumber - rightNumber : leftPart.localeCompare(rightPart, undefined, { numeric: true })
-    if (diff !== 0) return diff
-  }
-  return 0
-}
-
-function isNewerVersion(candidate: string, current: string): boolean {
-  return compareVersions(candidate, current) > 0
-}
-
-export async function checkLatestVersion(): Promise<void> {
-  if (isUpdateCheckDisabled()) return
-  try {
-    const packageName = PACKAGE_INFO?.name || 'hermes-web-ui'
-    const registryName = encodeURIComponent(packageName)
-    const res = await fetch(`https://registry.npmjs.org/${registryName}/latest`, { signal: AbortSignal.timeout(10000) })
-    if (res.ok) {
-      const data = await res.json() as { version: string }
-      cachedLatestVersion = data.version
-      if (LOCAL_VERSION && cachedLatestVersion && isNewerVersion(cachedLatestVersion, LOCAL_VERSION)) {
-        console.log(`Update available: ${LOCAL_VERSION} → ${cachedLatestVersion}`)
-      }
-    }
-  } catch { /* ignore */ }
-}
-
-export function startVersionCheck(): void {
-  if (isUpdateCheckDisabled()) return
-  setTimeout(checkLatestVersion, 5000)
-  setInterval(checkLatestVersion, 30 * 60 * 1000)
-}
 
 async function getAgentBridgeHealth() {
   const now = Date.now()
@@ -197,10 +139,6 @@ export async function healthCheck(ctx: any) {
     version: hermesVersion,
     gateway: 'running',
     webui_version: LOCAL_VERSION,
-    webui_latest: isUpdateCheckDisabled() ? '' : cachedLatestVersion,
-    webui_update_available: isUpdateCheckDisabled()
-      ? false
-      : Boolean(LOCAL_VERSION && cachedLatestVersion && isNewerVersion(cachedLatestVersion, LOCAL_VERSION)),
     node_version: process.versions.node,
     agent_bridge: agentBridge,
   }
